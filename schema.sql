@@ -1,18 +1,18 @@
 
 CREATE TABLE IF NOT EXISTS days (
     day_id INTEGER PRIMARY KEY AUTOINCREMENT, 
-    day TEXT
+    day TEXT UNIQUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS exercises (
     exercise_id INTEGER PRIMARY KEY AUTOINCREMENT, 
-    name TEXT, 
-    reps TEXT
+    exercise_name TEXT UNIQUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS junction (
     day_id INTEGER, 
-    exercise_id INTEGER
+    exercise_id INTEGER,
+    UNIQUE (day_id, exercise_id)
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
