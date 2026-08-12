@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const database = require('better-sqlite3');
-const db = new database('gym.db');
+const db = require('./db.js');
 
 // db.exec('CREATE TABLE IF NOT EXISTS sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE NOT NULL)');
 // const insert = db.prepare('INSERT INTO days (name) VALUES (?)');
@@ -16,10 +16,10 @@ const db = new database('gym.db');
 // insert.run('Day 5');
 // insert.run('Day 6');
 
-db.exec('CREATE TABLE IF NOT EXISTS exercises (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, reps TEXT)');
-const insert2 = db.prepare('INSERT INTO exercises (name, reps) VALUES (?, ?');
+// db.exec('CREATE TABLE IF NOT EXISTS exercises (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, reps TEXT)');
+// const insert2 = db.prepare('INSERT INTO exercises (name, reps) VALUES (?, ?');
 // repopulate for version control
-insert2.run('Back Squat', '4x5');
+// insert2.run('Back Squat', '4x5');
 // insert.run('Bench Press', '4x5');
 // insert.run('Barbell Row', '3x8');
 // insert.run('DB Overhead Press', '3x10');
@@ -41,21 +41,14 @@ insert2.run('Back Squat', '4x5');
 // insert.run('DB Snatch', '3x6');
 // insert.run('Chin-ups', '3x10');
 
-// db.exec('CREATE TABLE IF NOT EXISTS day_exercises_junction (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE NOT NULL)');
-// const insert = db.prepare('INSERT INTO days (name) VALUES (?)');
-
-// db.exec('CREATE TABLE IF NOT EXISTS log (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE NOT NULL)');
-// const insert = db.prepare('INSERT INTO days (name) VALUES (?)');
-
-const rows2 = db.prepare('SELECT * FROM exercises').all();
-console.log(rows);
 
 
 
-//const deleteStatement = db.prepare('DELETE FROM testTable WHERE id = ?');
-//deleteStatement.run(3);
-//const update = db.prepare('UPDATE testTable SET name = ? WHERE ID = ?');
-//update.run('updated', 2);
+// const deleteStatement = db.prepare('DELETE FROM days WHERE id = ?');
+// deleteStatement.run(2);
+
+// const update = db.prepare('UPDATE days SET day = ? WHERE ID = ?');
+// update.run('updated', 2);
 const rows = db.prepare('SELECT * FROM days').all();
 console.log(rows);
 
