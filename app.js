@@ -13,6 +13,8 @@ const rows = db.prepare('SELECT * FROM days').all();
 console.log(rows);
 const rows2 = db.prepare('SELECT * FROM exercises').all();
 console.log(rows2);
+const rows3 = db.prepare('SELECT * FROM junction').all();
+console.log(rows3);
 
 // app.get('/', (req, res) => {
 //     res.send('Hello, sanad\'s gym tracker!');

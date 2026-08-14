@@ -6,13 +6,16 @@ CREATE TABLE IF NOT EXISTS days (
 
 CREATE TABLE IF NOT EXISTS exercises (
     exercise_id INTEGER PRIMARY KEY AUTOINCREMENT, 
-    exercise_name TEXT UNIQUE NOT NULL
+    exercise TEXT UNIQUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS junction (
-    day_id INTEGER, 
-    exercise_id INTEGER,
-    UNIQUE (day_id, exercise_id)
+    dayRef INTEGER,
+    exerciseRef INTEGER,
+    FOREIGN KEY(dayRef) REFERENCES days(day_id),
+    FOREIGN KEY(exerciseRef) REFERENCES exercises(exercise_id),
+    UNIQUE (dayRef, exerciseRef)
+   
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
