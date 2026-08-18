@@ -14,13 +14,13 @@ CREATE TABLE IF NOT EXISTS junction (
 CREATE TABLE IF NOT EXISTS sessions (
     session_id INTEGER PRIMARY KEY AUTOINCREMENT,
     date TEXT DEFAULT CURRENT_DATE, 
-    day_id INTEGER
+    dayLogged INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT, 
-    session_id INTEGER, 
-    exercise_id INTEGER, 
+    FOREIGN KEY (sessionRef) REFERENCES session(session_id),
+    FOREIGN KEY (exerciseRef) REFERENCES exercises(exercise_id),
     weight INTEGER,
     reps TEXT
 );
