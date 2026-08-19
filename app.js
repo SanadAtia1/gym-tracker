@@ -35,25 +35,38 @@ app.post('/sessions', (req, res) => {
   });
 
 
-// app.get('/', (req, res) => {
-//     res.send('Hello, sanad\'s gym tracker!');
-// });
+app.get('/', (req, res) => {
+    res.send('Hello, sanad\'s gym tracker!');
+});
 
-// app.get('/days/:dayNum', (req, res) => {
-//     const dayNum = req.params.dayNum;
-//     if (dayNum > 0 && dayNum < 7) {
-//         const dayQuery = db.prepare(`
-//         SELECT e.exercise
-//         FROM exercises e 
-//         JOIN junction j ON j.exerciseRef = e.exercise_id 
-//         WHERE j.day = ?
-//         `).all(dayNum);
+app.get('/sessions/:sessDate', (req, res) => {
+    const sessDate = req.params.sessDate;
+    const viewSess = db.prepare(`
+        SELECT e.exercise, l.weight, l.reps, s.date, l.id
+        FROM exercises e
+        JOIN logs l ON l.exerciseRef = e.exercise_id
+        JOIN sessions s ON s.session_id = l.sessionRef
+        WHERE s.date = ?
+        `).all(sessDate);
+
+        res.json(viewSess);
+});
+
+app.get('/days/:dayNum', (req, res) => {
+    const dayNum = req.params.dayNum;
+    if (dayNum > 0 && dayNum < 7) {
+        const dayQuery = db.prepare(`
+        SELECT e.exercise
+        FROM exercises e 
+        JOIN junction j ON j.exerciseRef = e.exercise_id 
+        WHERE j.day = ?
+        `).all(dayNum);
     
-//         res.json(dayQuery);
-//     } else {
-//         res.send('No workouts on this day!');
-//     }
-// });
+        res.json(dayQuery);
+    } else {
+        res.send('No workouts on this day!');
+    }
+});
 
 app.listen(3000, () => {
     console.log('Server is running on http://localhost:3000');
