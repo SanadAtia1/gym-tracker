@@ -18,9 +18,11 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 
 CREATE TABLE IF NOT EXISTS logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, 
-    FOREIGN KEY (sessionRef) REFERENCES session(session_id),
-    FOREIGN KEY (exerciseRef) REFERENCES exercises(exercise_id),
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sessionRef INTEGER,
+    exerciseRef INTEGER,
     weight INTEGER,
-    reps TEXT
+    reps INTEGER,
+    FOREIGN KEY (sessionRef) REFERENCES sessions(session_id),
+    FOREIGN KEY (exerciseRef) REFERENCES exercises(exercise_id)
 );

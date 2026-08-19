@@ -8,20 +8,30 @@ const db = require('./db.js');
 // deleteStatement.run(1);
 // const update = db.prepare('UPDATE days SET day = ? WHERE ID = ?');
 // update.run('updated', 2);
-// const rows2 = db.prepare('SELECT * FROM exercises').all();
-// console.log(rows2);
-// const rows3 = db.prepare('SELECT * FROM junction').all();
-// console.log(rows3);
+const rows2 = db.prepare('SELECT * FROM sessions').all();
+console.log(rows2);
+const rows3 = db.prepare('SELECT * FROM logs').all();
+console.log(rows3);
 
 app.use(express.json());
 
 
 
 app.post('/sessions', (req, res) => {
-    const dayChoice = req.body.day;
+    const day = req.body.day;
     const createSession = db.prepare('INSERT INTO sessions (dayLogged) VALUES (?)');
-    const sessID = createSession.run(dayChoice);
+    const sessID = createSession.run(day);
     res.json(sessID.lastInsertRowid);
+  });
+
+  app.post('/logs', (req, res) => {
+    const sessionID = req.body.sessionID;
+    const exerciseID = req.body.exerciseID;
+    const weight = req.body.weight;
+    const reps = req.body.reps;
+    const createLog = db.prepare('INSERT INTO logs (sessionRef, exerciseRef, weight, reps) VALUES (?, ?, ?, ?)');
+    const logID = createLog.run(sessionID, exerciseID, weight, reps);
+    res.json(logID.lastInsertRowid);
   });
 
 
