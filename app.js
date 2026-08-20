@@ -3,57 +3,20 @@ const app = express();
 const database = require('better-sqlite3');
 const db = require('./db.js');
 
-
-// const deleteStatement = db.prepare('DELETE FROM exercises WHERE exercise_id = ?');
-// deleteStatement.run(1);
-// const update = db.prepare('UPDATE days SET day = ? WHERE ID = ?');
-// update.run('updated', 2);
-const rows2 = db.prepare('SELECT * FROM sessions').all();
-console.log(rows2);
-const rows3 = db.prepare('SELECT * FROM logs').all();
-console.log(rows3);
+// const rows2 = db.prepare('SELECT * FROM sessions').all();
+// console.log(rows2);
+// const rows3 = db.prepare('SELECT * FROM logs').all();
+// console.log(rows3);
 
 app.use(express.json());
-
-
-
-app.post('/sessions', (req, res) => {
-    const day = req.body.day;
-    const createSession = db.prepare('INSERT INTO sessions (dayLogged) VALUES (?)');
-    const sessID = createSession.run(day);
-    res.json(sessID.lastInsertRowid);
-  });
-
-  app.post('/logs', (req, res) => {
-    const sessionID = req.body.sessionID;
-    const exerciseID = req.body.exerciseID;
-    const weight = req.body.weight;
-    const reps = req.body.reps;
-    const createLog = db.prepare('INSERT INTO logs (sessionRef, exerciseRef, weight, reps) VALUES (?, ?, ?, ?)');
-    const logID = createLog.run(sessionID, exerciseID, weight, reps);
-    res.json(logID.lastInsertRowid);
-  });
-
 
 app.get('/', (req, res) => {
     res.send('Hello, sanad\'s gym tracker!');
 });
 
-app.get('/sessions/:sessDate', (req, res) => {
-    const sessDate = req.params.sessDate;
-    const viewSess = db.prepare(`
-        SELECT e.exercise, l.weight, l.reps, s.date, l.id
-        FROM exercises e
-        JOIN logs l ON l.exerciseRef = e.exercise_id
-        JOIN sessions s ON s.session_id = l.sessionRef
-        WHERE s.date = ?
-        `).all(sessDate);
-
-        res.json(viewSess);
-});
-
-app.get('/days/:dayNum', (req, res) => {
-    const dayNum = req.params.dayNum;
+// view workouts on a given day
+app.get('/days/:day', (req, res) => {
+    const dayNum = req.params.day;
     if (dayNum > 0 && dayNum < 7) {
         const dayQuery = db.prepare(`
         SELECT e.exercise
@@ -68,7 +31,72 @@ app.get('/days/:dayNum', (req, res) => {
     }
 });
 
+// start new session
+app.post('/sessions', (req, res) => {
+    const day = req.body.day;
+    const createSession = db.prepare('INSERT INTO sessions (dayLogged) VALUES (?)');
+    const sessID = createSession.run(day);
+    res.json(sessID.lastInsertRowid);
+  });
+
+// new log entries
+app.post('/logs', (req, res) => {
+    const sessionID = req.body.sessionID;
+    const exerciseID = req.body.exerciseID;
+    const weight = req.body.weight;
+    const reps = req.body.reps;
+    const createLog = db.prepare('INSERT INTO logs (sessionRef, exerciseRef, weight, reps) VALUES (?, ?, ?, ?)');
+    const logID = createLog.run(sessionID, exerciseID, weight, reps);
+    res.json(logID.lastInsertRowid);
+  });
+
+// view logs on a given date
+app.get('/sessions/:date', (req, res) => {
+    const sessDate = req.params.date;
+    const viewSess = db.prepare(`
+        SELECT e.exercise, l.weight, l.reps, s.date, l.id
+        FROM exercises e
+        JOIN logs l ON l.exerciseRef = e.exercise_id
+        JOIN sessions s ON s.session_id = l.sessionRef
+        WHERE s.date = ?
+        `).all(sessDate);
+
+        res.json(viewSess);
+});
+
+// delete log entry
+app.delete('/logs/:id', (req, res) => {
+    const logID = req.params.id;
+    const deleteLog = db.prepare('DELETE FROM logs WHERE id = ?');
+    const delInfo = deleteLog.run(logID);
+
+    if (delInfo.changes > 0) {
+        res.json({ message: `Log ${logID} deleted` }); 
+    }else {
+        res.json({ message: 'No changes' });
+    }
+});
+
+// update existing log entry
+app.put('/logs/:id', (req, res) => {
+    const logID = req.params.id;
+    const updatedWeight = req.body.weight;
+    const updatedReps = req.body.reps;
+    const updateLog = db.prepare('UPDATE logs SET weight = ?, reps = ? WHERE ID = ?');
+    const updInfo = updateLog.run(updatedWeight, updatedReps, logID);
+
+    if (updInfo.changes > 0) {
+        res.json({ message: `Log ${logID} updated` });
+    } else {
+        res.json({ message: 'No changes' });
+    }
+});
+
 app.listen(3000, () => {
     console.log('Server is running on http://localhost:3000');
 });
 
+// curl -X PUT http://localhost:3000/logs/2 -H "Content-Type: application/json" -d '{"weight": "300", "reps": "15"}'
+// curl -X DELETE http://localhost:3000/logs/1
+// curl --json '{"sessionID": "1", "exerciseID": "1", "weight": "225", "reps": "20"}' http://localhost:3000/logs
+// curl --json '{"day": "4"}' http://localhost:3000/sessions
