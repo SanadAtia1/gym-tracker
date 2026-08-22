@@ -5,8 +5,8 @@ const db = require('./db.js');
 
 // const rows2 = db.prepare('SELECT * FROM sessions').all();
 // console.log(rows2);
-// const rows3 = db.prepare('SELECT * FROM logs').all();
-// console.log(rows3);
+const rows3 = db.prepare('SELECT * FROM logs').all();
+console.log(rows3);
 
 app.use(express.json());
 
@@ -41,10 +41,7 @@ app.post('/sessions', (req, res) => {
 
 // new log entries
 app.post('/logs', (req, res) => {
-    const sessionID = req.body.sessionID;
-    const exerciseID = req.body.exerciseID;
-    const weight = req.body.weight;
-    const reps = req.body.reps;
+    const { sessionID, exerciseID, weight, reps } = req.body;
     const createLog = db.prepare('INSERT INTO logs (sessionRef, exerciseRef, weight, reps) VALUES (?, ?, ?, ?)');
     const logID = createLog.run(sessionID, exerciseID, weight, reps);
     res.json(logID.lastInsertRowid);
@@ -78,12 +75,23 @@ app.delete('/logs/:id', (req, res) => {
 });
 
 // update existing log entry
-app.put('/logs/:id', (req, res) => {
+app.patch('/logs/:id', (req, res) => {
     const logID = req.params.id;
-    const updatedWeight = req.body.weight;
-    const updatedReps = req.body.reps;
-    const updateLog = db.prepare('UPDATE logs SET weight = ?, reps = ? WHERE ID = ?');
-    const updInfo = updateLog.run(updatedWeight, updatedReps, logID);
+    const { weight, reps } = req.body;
+    let updInfo = undefined;
+
+    if (weight == undefined && reps == undefined){
+        res.json({ message: 'No values entered.' });
+    } else if (weight == undefined) {
+        const updateLog = db.prepare('UPDATE logs SET reps = ? WHERE ID = ?');
+        updInfo = updateLog.run(reps, logID);
+    } else if (reps == undefined) {
+        const updateLog = db.prepare('UPDATE logs SET weight = ? WHERE ID = ?');
+        updInfo = updateLog.run(weight, logID);
+    } else {
+        const updateLog = db.prepare('UPDATE logs SET weight = ?, reps = ? WHERE ID = ?');
+        updInfo = updateLog.run(weight, reps, logID);
+    }
 
     if (updInfo.changes > 0) {
         res.json({ message: `Log ${logID} updated` });
@@ -96,7 +104,7 @@ app.listen(3000, () => {
     console.log('Server is running on http://localhost:3000');
 });
 
-// curl -X PUT http://localhost:3000/logs/2 -H "Content-Type: application/json" -d '{"weight": "300", "reps": "15"}'
+// curl -X PATCH http://localhost:3000/logs/2 -H "Content-Type: application/json" -d '{"weight": "300", "reps": "15"}'
 // curl -X DELETE http://localhost:3000/logs/1
 // curl --json '{"sessionID": "1", "exerciseID": "1", "weight": "225", "reps": "20"}' http://localhost:3000/logs
 // curl --json '{"day": "4"}' http://localhost:3000/sessions
