@@ -5,14 +5,15 @@ const db = require('./db.js');
 
 // const rows2 = db.prepare('SELECT * FROM sessions').all();
 // console.log(rows2);
-const rows3 = db.prepare('SELECT * FROM logs').all();
-console.log(rows3);
+// const rows3 = db.prepare('SELECT * FROM logs').all();
+// console.log(rows3);
 
+app.use(express.static('public'));
 app.use(express.json());
 
-app.get('/', (req, res) => {
-    res.send('Hello, sanad\'s gym tracker!');
-});
+// app.get('/', (req, res) => {
+//     res.send('Hello, sanad\'s gym tracker!');
+// });
 
 // view workouts on a given day
 app.get('/days/:day', (req, res) => {
@@ -27,7 +28,7 @@ app.get('/days/:day', (req, res) => {
     
         res.json(dayQuery);
     } else {
-        res.send('No workouts on this day!');
+        res.json({message: 'No workouts on this day!'});
     }
 });
 
