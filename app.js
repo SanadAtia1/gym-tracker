@@ -11,10 +11,6 @@ const db = require('./db.js');
 app.use(express.static('public'));
 app.use(express.json());
 
-// app.get('/', (req, res) => {
-//     res.send('Hello, sanad\'s gym tracker!');
-// });
-
 // view workouts on a given day
 app.get('/days/:day', (req, res) => {
     const dayNum = req.params.day;
@@ -28,7 +24,7 @@ app.get('/days/:day', (req, res) => {
     
         res.json(dayQuery);
     } else {
-        res.json({message: 'No workouts on this day!'});
+        res.json({message: 'Error: invalid choice'});
     }
 });
 

@@ -18,25 +18,30 @@
         const list = document.querySelector('.exercise-list');
         const input = document.querySelector('#day');
 
-        button.addEventListener('click', () => {
-            const value = input.value;
-            
-            async function getDays(url) {
-                const response = await fetch(url);
-                const data = await response.json();
-
+        async function getDays(url) {
+            const response = await fetch(url);
+            const data = await response.json();
+            if (Array.isArray(data)) {
                 list.innerHTML = "";
                 data.forEach(day => {
                     const li = document.createElement("li");
                     li.textContent = day.exercise;
                     list.appendChild(li);
                 });
+            } else {
+                list.innerHTML = data.message;
+            }
+        }
 
-                console.log(data);
+        button.addEventListener('click', () => {
+            const value = input.value;
+            if (value > 0 && value < 7) {
+                getDays(`/days/${value}`);
+            } else {
+                list.innerHTML = "Error: invalid choice";
+                return;
             }
 
-            getDays(`/days/${value}`);
-            console.log('RAN!');
         });
     </script>
     
