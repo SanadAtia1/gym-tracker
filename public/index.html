@@ -8,37 +8,75 @@
     <li class="exercise-list"></li>
 
     <label for="day">View exercises by day:</label>
-    <input type="number" id="day" name="day" placeholder="Enter day">
-    <button type="button" class="submit-choice-btn">Go</button>
+    <!-- <input type="number" id="day" name="day" placeholder="Enter day"> -->
+    <select id="day-select" name="day">
+        <option value="1">Day 1</option>
+        <option value="2">Day 2</option>
+        <option value="3">Day 3</option>
+        <option value="4">Day 4</option>
+        <option value="5">Day 5</option>
+        <option value="6">Day 6</option>
+      </select>
+    <button type="button" class="submit-choice-btn">Go</button> <br>
 
 
 
     <script>
         const button = document.querySelector('.submit-choice-btn');
         const list = document.querySelector('.exercise-list');
-        const input = document.querySelector('#day');
+        const input = document.querySelector('#day-select');
+        let sessionID;
+        
 
         async function getDays(url) {
             const response = await fetch(url);
             const data = await response.json();
             if (Array.isArray(data)) {
-                list.innerHTML = "";
+                list.innerHTML = '';
                 data.forEach(day => {
-                    const li = document.createElement("li");
+                    const li = document.createElement('li');
                     li.textContent = day.exercise;
                     list.appendChild(li);
                 });
-            } else {
-                list.innerHTML = data.message;
-            }
+            } 
         }
 
         button.addEventListener('click', () => {
             const value = input.value;
             if (value > 0 && value < 7) {
                 getDays(`/days/${value}`);
+
+                if (!document.getElementById('create-sess-btn')) {
+                    const createSession = document.createElement('button');
+                    createSession.textContent = 'Create new session';
+                    createSession.id = 'create-sess-btn'; 
+                    document.body.appendChild(createSession);
+
+                    createSession.addEventListener('click', () => {
+                        const options = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ day: value }) 
+                        };
+
+                        async function newSession(url) {
+                            const response = await fetch(url, options);
+                            const data = await response.json();
+                            sessionID = data;
+                            console.log(sessionID);
+                        }
+
+                        newSession(`/sessions`);
+                    });
+                }
+ 
             } else {
-                list.innerHTML = "Error: invalid choice";
+                if (document.getElementById('create-sess-btn')){
+                    document.getElementById('create-sess-btn').remove();
+                }
+                list.innerHTML = 'Error: invalid choice';
                 return;
             }
 
