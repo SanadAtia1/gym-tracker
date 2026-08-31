@@ -3,10 +3,10 @@ const app = express();
 const database = require('better-sqlite3');
 const db = require('./db.js');
 
-// const rows2 = db.prepare('SELECT * FROM sessions').all();
-// console.log(rows2);
-// const rows3 = db.prepare('SELECT * FROM logs').all();
-// console.log(rows3);
+const rows2 = db.prepare('SELECT * FROM sessions').all();
+console.log(rows2);
+const rows3 = db.prepare('SELECT * FROM logs').all();
+console.log(rows3);
 
 app.use(express.static('public'));
 app.use(express.json());
@@ -16,7 +16,7 @@ app.get('/days/:day', (req, res) => {
     const dayNum = req.params.day;
     if (dayNum > 0 && dayNum < 7) {
         const dayQuery = db.prepare(`
-        SELECT e.exercise
+        SELECT e.exercise, e.exercise_id
         FROM exercises e 
         JOIN junction j ON j.exerciseRef = e.exercise_id 
         WHERE j.day = ?
