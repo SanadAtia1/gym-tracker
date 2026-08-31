@@ -5,10 +5,10 @@
 </head>
 <body>
     
-    <li class="exercise-list"></li>
+    <li class="exercise-list"></li> <br>
+    <li class="sess-log-list"></li>
 
     <label for="day">View exercises by day:</label>
-    <!-- <input type="number" id="day" name="day" placeholder="Enter day"> -->
     <select id="day-select" name="day">
         <option value="1">Day 1</option>
         <option value="2">Day 2</option>
@@ -17,33 +17,38 @@
         <option value="5">Day 5</option>
         <option value="6">Day 6</option>
       </select>
-    <button type="button" class="submit-choice-btn">Go</button> <br>
+    <button type="button" class="submit-day-btn">Go</button> <br>
+
+    <label for="sess-date">View session on:</label>
+    <input type="date" id="sess-date" name="sess-date">
+    <button type="button" class="submit-date-btn">Go</button> <br>
 
 
 
     <script>
-        const button = document.querySelector('.submit-choice-btn');
-        const list = document.querySelector('.exercise-list');
-        const input = document.querySelector('#day-select');
+        const dayButton = document.querySelector('.submit-day-btn');
+        const sessButton = document.querySelector('.submit-date-btn');
+        const dayList = document.querySelector('.exercise-list');
+        const logList = document.querySelector('.sess-log-list');
+        const inputDay = document.querySelector('#day-select');
+        const inputDate = document.querySelector('#sess-date');
         let sessionID;
-        
 
-        async function getDays(url) {
-            const response = await fetch(url);
-            const data = await response.json();
-            if (Array.isArray(data)) {
-                list.innerHTML = '';
-                data.forEach(day => {
-                    const li = document.createElement('li');
-                    li.textContent = day.exercise;
-                    list.appendChild(li);
-                });
-            } 
-        }
-
-        button.addEventListener('click', () => {
-            const value = input.value;
+        dayButton.addEventListener('click', () => {
+            const value = inputDay.value;
             if (value > 0 && value < 7) {
+                async function getDays(url) {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    if (Array.isArray(data)) {
+                        dayList.innerHTML = '';
+                        data.forEach(day => {
+                            const li = document.createElement('li');
+                            li.textContent = day.exercise;
+                            dayList.appendChild(li); 
+                        });
+                    } 
+                }
                 getDays(`/days/${value}`);
 
                 if (!document.getElementById('create-sess-btn')) {
@@ -76,10 +81,30 @@
                 if (document.getElementById('create-sess-btn')){
                     document.getElementById('create-sess-btn').remove();
                 }
-                list.innerHTML = 'Error: invalid choice';
+                dayList.innerHTML = 'Error: invalid choice';
                 return;
             }
+        });
 
+        sessButton.addEventListener('click', () => {
+            const value = inputDate.value;
+            console.log(value);
+            async function getLogs(url) {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    if (data.length > 0) {
+                        logList.innerHTML = '';
+                        data.forEach(log => {
+                            const li = document.createElement('li');
+                            li.textContent = `log ID: ${log.id} ${log.exercise}: ${log.weight} lbs x ${log.reps} reps`;
+                            logList.appendChild(li); 
+                        });
+                    } else {
+                        logList.innerHTML = 'NO LOGS'
+                    }
+                }
+
+                getLogs(`/sessions/${value}`);
         });
     </script>
     
