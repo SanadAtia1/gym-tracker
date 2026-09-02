@@ -36,108 +36,121 @@
 
         dayButton.addEventListener('click', () => {
             const value = inputDay.value;
-            if (value > 0 && value < 7) {
-                async function getDays(url) {
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    if (Array.isArray(data)) {
-                        dayList.innerHTML = '';
-                        data.forEach(day => {
-                            const li = document.createElement('li');
-                            li.textContent = day.exercise;
-                            dayList.appendChild(li); 
-                        });
-                    } 
-                }
-                getDays(`/days/${value}`);
-
-                if (!document.getElementById('create-sess-btn')) {
-                    const createSession = document.createElement('button');
-                    createSession.textContent = 'Create new session';
-                    createSession.id = 'create-sess-btn'; 
-                    document.body.appendChild(createSession);
-
-                    createSession.addEventListener('click', () => {
-                        const options = {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ day: value }) 
-                        };
-
-                        async function newSession(url) {
-                            const response = await fetch(url, options);
-                            const data = await response.json();
-                            sessionID = data;
-                            console.log(sessionID);
-                        }
-
-                        newSession(`/sessions`);
+            async function getDays(url) {
+                const response = await fetch(url);
+                const data = await response.json();
+                if (Array.isArray(data)) {
+                    dayList.innerHTML = '';
+                    data.forEach(day => {
+                        const li = document.createElement('li');
+                        li.textContent = day.exercise;
+                        dayList.appendChild(li); 
                     });
-                }
- 
-            } else {
-                if (document.getElementById('create-sess-btn')){
-                    document.getElementById('create-sess-btn').remove();
-                }
-                dayList.innerHTML = 'Error: invalid choice';
-                return;
+                } 
+            }
+            getDays(`/days/${value}`);
+
+            if (!document.getElementById('create-sess-btn')) {
+                const createSession = document.createElement('button');
+                createSession.textContent = 'Create new session';
+                createSession.id = 'create-sess-btn'; 
+                document.body.appendChild(createSession);
+
+                createSession.addEventListener('click', () => {
+                    const options = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ day: value }) 
+                    };
+
+                    async function newSession(url) {
+                        const response = await fetch(url, options);
+                        const data = await response.json();
+                        sessionID = data;
+                        console.log(sessionID);
+                    }
+
+                    newSession(`/sessions`);
+                });
             }
         });
 
         sessButton.addEventListener('click', () => {
             const value = inputDate.value;
             async function getLogs(url) {
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    if (data.length > 0) {
-                        logList.innerHTML = '';
-                        data.forEach(log => {
-                            const li = document.createElement('li');
-                            li.textContent = `${log.exercise}: ${log.weight} lbs x ${log.reps} reps`;
-                            
-                            const editBtn = document.createElement('button');
-                            editBtn.textContent = 'Edit';
-                            editBtn.className = 'edit-log-btn';
-                            li.appendChild(editBtn);
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.length > 0) {
+                    logList.innerHTML = '';
+                    data.forEach(log => {
+                        const li = document.createElement('li');
+                        li.textContent = `${log.exercise}: ${log.weight} lbs x ${log.reps} reps`;
 
-                            editBtn.addEventListener('click', () => {
+                        let inputsCreated = false;
+                        const editBtn = document.createElement('button');
+                        editBtn.textContent = 'Edit';
+                        editBtn.className = 'edit-log-btn';
+                        li.appendChild(editBtn);
+
+                        editBtn.addEventListener('click', () => {
+                            if (!inputsCreated) {
                                 const updtedWeight = document.createElement('input');
                                 updtedWeight.type = 'number';
                                 updtedWeight.value = log.weight;
                                 const updtedReps = document.createElement('input');
                                 updtedReps.type = 'number';
                                 updtedReps.value = log.reps;
-                                li.innerHTML = `(${log.exercise}) Set weight and reps: `;
                                 li.appendChild(updtedWeight);
                                 li.appendChild(updtedReps);
+                                inputsCreated = true;
 
-                            });
-
-                            const deleteBtn = document.createElement('button');
-                            deleteBtn.textContent = 'Delete';
-                            deleteBtn.className = 'delete-log-btn';
-                            li.appendChild(deleteBtn);
-
-                            deleteBtn.addEventListener('click', () => {
-                                async function delLog(url) {
-                                    const response = await fetch(url, {
-                                        method: 'DELETE'
-                                    });
-                                    const data = await response.json();
-                                    li.innerHTML = data.message;
-                                }
-                                delLog(`/logs/${log.id}`);
-                            });
-
-                            logList.appendChild(li); 
+                                const saveBtn = document.createElement('button');
+                                saveBtn.textContent = 'Save';
+                                saveBtn.className = 'save-edit-btn';
+                                li.appendChild(saveBtn);
+                                saveBtn.addEventListener('click', () => {
+                                    
+                                });
+                            
+                                const cancelBtn = document.createElement('button');
+                                cancelBtn.textContent = 'Cancel';
+                                cancelBtn.className = 'cancel-edit-btn';
+                                li.appendChild(cancelBtn);
+                                cancelBtn.addEventListener('click', () => {
+                                    updtedWeight.remove();
+                                    updtedReps.remove();
+                                    saveBtn.remove();
+                                    cancelBtn.remove();
+                                    inputsCreated = false;
+                                });
+                            }
                         });
-                    } else {
-                        logList.innerHTML = 'No logs on this day'
-                    }
+
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'Delete';
+                        deleteBtn.className = 'delete-log-btn';
+                        li.appendChild(deleteBtn);
+
+                        deleteBtn.addEventListener('click', () => {
+                            async function delLog(url) {
+                                const response = await fetch(url, {
+                                    method: 'DELETE'
+                                });
+                                const data = await response.json();
+                                li.innerHTML = data.message;
+                            }
+                            delLog(`/logs/${log.id}`);
+                        });
+
+                        logList.appendChild(li); 
+                    });
+                } else {
+                    logList.innerHTML = 'No logs on this day'
                 }
-                getLogs(`/sessions/${value}`);
+            }
+            getLogs(`/sessions/${value}`);
         });
     </script>
     
