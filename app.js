@@ -75,26 +75,29 @@ app.delete('/logs/:id', (req, res) => {
 app.patch('/logs/:id', (req, res) => {
     const logID = req.params.id;
     const { weight, reps } = req.body;
-    let updInfo = undefined;
+    // let updInfo = undefined;
 
-    if (weight == undefined && reps == undefined){
-        res.json({ message: 'No values entered.' });
-    } else if (weight == undefined) {
+    if (!weight && !reps) {
+        res.json({ 
+            success: false,
+            message:'No valid entries provided.'
+        });
+        return;
+    } else if (!weight) {
         const updateLog = db.prepare('UPDATE logs SET reps = ? WHERE ID = ?');
-        updInfo = updateLog.run(reps, logID);
-    } else if (reps == undefined) {
+        updateLog.run(reps, logID);
+    } else if (!reps) {
         const updateLog = db.prepare('UPDATE logs SET weight = ? WHERE ID = ?');
-        updInfo = updateLog.run(weight, logID);
+        updateLog.run(weight, logID);
     } else {
         const updateLog = db.prepare('UPDATE logs SET weight = ?, reps = ? WHERE ID = ?');
-        updInfo = updateLog.run(weight, reps, logID);
+        updateLog.run(weight, reps, logID);
     }
 
-    if (updInfo.changes > 0) {
-        res.json({ message: `Log ${logID} updated` });
-    } else {
-        res.json({ message: 'No changes' });
-    }
+    res.json({ 
+        success: true,
+        message: `Log ${logID} updated` 
+    });
 });
 
 app.listen(3000, () => {

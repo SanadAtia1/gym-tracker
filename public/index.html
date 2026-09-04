@@ -17,7 +17,7 @@
         <option value="5">Day 5</option>
         <option value="6">Day 6</option>
       </select>
-    <button type="button" class="submit-day-btn">Go</button> <br>
+    <button type="button" class="submit-day-btn">Go</button> <br><br>
 
     <label for="sess-date">View session on:</label>
     <input type="date" id="sess-date" name="sess-date">
@@ -57,16 +57,14 @@
                 document.body.appendChild(createSession);
 
                 createSession.addEventListener('click', () => {
-                    const options = {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ day: value }) 
-                    };
-
                     async function newSession(url) {
-                        const response = await fetch(url, options);
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ day: value }) 
+                        });
                         const data = await response.json();
                         sessionID = data;
                         console.log(sessionID);
@@ -86,7 +84,9 @@
                     logList.innerHTML = '';
                     data.forEach(log => {
                         const li = document.createElement('li');
-                        li.textContent = `${log.exercise}: ${log.weight} lbs x ${log.reps} reps`;
+                        const span = document.createElement('span');
+                        span.textContent = `${log.exercise}: ${log.weight} lbs x ${log.reps} reps`;
+                        li.appendChild(span);
 
                         let inputsCreated = false;
                         const editBtn = document.createElement('button');
@@ -111,7 +111,32 @@
                                 saveBtn.className = 'save-edit-btn';
                                 li.appendChild(saveBtn);
                                 saveBtn.addEventListener('click', () => {
-                                    
+                                    async function editLog(url) {
+                                        const response = await fetch(url, {
+                                            method: 'PATCH',
+                                            headers: {
+                                                'Content-Type': 'application/json'
+                                            },
+                                            body: JSON.stringify({ weight: updtedWeight.value, reps: updtedReps.value }) 
+                                        });
+                                        const data = await response.json();
+                                        
+                                        console.log(data.message);
+                                        if (data.success) {
+                                            if (updtedWeight.value) {log.weight = updtedWeight.value;}
+                                            if (updtedReps.value) {log.reps = updtedReps.value;}
+                                            span.textContent = `${log.exercise}: ${log.weight} lbs x ${log.reps} reps`;
+                                            updtedWeight.remove();
+                                            updtedReps.remove();
+                                            saveBtn.remove();
+                                            cancelBtn.remove();
+                                            inputsCreated = false;
+                                        } else {
+                                           alert(data.message);
+                                        }
+                                    }
+
+                                    editLog(`/logs/${log.id}`)
                                 });
                             
                                 const cancelBtn = document.createElement('button');
