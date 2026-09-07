@@ -45,6 +45,7 @@
                         const li = document.createElement('li');
                         li.textContent = day.exercise;
                         dayList.appendChild(li); 
+                        console.log(day.exercise_id);
                     });
                 } 
             }
@@ -71,6 +72,7 @@
                     }
 
                     newSession(`/sessions`);
+                    createSession.remove();
                 });
             }
         });
