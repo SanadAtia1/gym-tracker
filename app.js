@@ -11,6 +11,16 @@ console.log(rows3);
 app.use(express.static('public'));
 app.use(express.json());
 
+const testQ = db.prepare(`
+    SELECT e.exercise, e.exercise_id, ROW_NUMBER() OVER (ORDER BY l.weight DESC) AS latestWeight
+    FROM exercises e
+    JOIN junction j ON j.exerciseRef = e.exercise_id 
+    JOIN logs l ON l.exerciseRef = e.exercise_id
+    WHERE j.day = 1;
+    `).all();
+
+    console.log(testQ);
+
 // view workouts on a given day
 app.get('/days/:day', (req, res) => {
     const dayNum = req.params.day;
