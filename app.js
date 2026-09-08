@@ -11,25 +11,40 @@ console.log(rows3);
 app.use(express.static('public'));
 app.use(express.json());
 
-const testQ = db.prepare(`
-    SELECT e.exercise, e.exercise_id, ROW_NUMBER() OVER (ORDER BY l.weight DESC) AS latestWeight
-    FROM exercises e
-    JOIN junction j ON j.exerciseRef = e.exercise_id 
-    JOIN logs l ON l.exerciseRef = e.exercise_id
-    WHERE j.day = 1;
-    `).all();
+// const testQ = db.prepare(`
+//     WITH ranked AS (
+//         SELECT e.exercise, e.exercise_id, l.weight, l.reps,
+//             ROW_NUMBER() OVER (PARTITION BY e.exercise_id ORDER BY s.date DESC) AS rn
+//         FROM exercises e
+//         JOIN junction j ON j.exerciseRef = e.exercise_id 
+//         LEFT JOIN logs l ON l.exerciseRef = e.exercise_id
+//         LEFT JOIN sessions s ON s.session_id = l.sessionRef
+//         WHERE j.day = 2
+//     )
+//         SELECT *
+//         FROM ranked
+//         WHERE rn = 1;
+//     `).all();
 
-    console.log(testQ);
+    // console.log(testQ);
 
 // view workouts on a given day
 app.get('/days/:day', (req, res) => {
     const dayNum = req.params.day;
     if (dayNum > 0 && dayNum < 7) {
         const dayQuery = db.prepare(`
-        SELECT e.exercise, e.exercise_id
-        FROM exercises e 
+        WITH ranked AS (
+        SELECT e.exercise, e.exercise_id, l.weight, l.reps,
+            ROW_NUMBER() OVER (PARTITION BY e.exercise_id ORDER BY s.date DESC) AS rn
+        FROM exercises e
         JOIN junction j ON j.exerciseRef = e.exercise_id 
+        LEFT JOIN logs l ON l.exerciseRef = e.exercise_id
+        LEFT JOIN sessions s ON s.session_id = l.sessionRef
         WHERE j.day = ?
+    )
+        SELECT *
+        FROM ranked
+        WHERE rn = 1;
         `).all(dayNum);
     
         res.json(dayQuery);
