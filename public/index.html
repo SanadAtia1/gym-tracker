@@ -36,20 +36,61 @@
 
         dayButton.addEventListener('click', () => {
             const value = inputDay.value;
-            async function getDays(url) {
+            async function getDays(url, displayLogVals) {
                 const response = await fetch(url);
                 const data = await response.json();
-                if (Array.isArray(data)) {
-                    dayList.innerHTML = '';
-                    data.forEach(day => {
+                dayList.innerHTML = '';
+                data.forEach(day => {
+                    if (!displayLogVals) {
                         const li = document.createElement('li');
                         li.textContent = day.exercise;
                         dayList.appendChild(li); 
-                        console.log(day.exercise_id);
-                    });
-                } 
+                    } else {
+                        const li = logExercise(day);
+                        dayList.appendChild(li);
+
+                    }
+                });
             }
-            getDays(`/days/${value}`);
+            getDays(`/days/${value}`, false);
+
+            function logExercise (day) {
+                const li = document.createElement('li');
+                const span = document.createElement('span');
+                if (!day.weight || !day.reps) {
+                    day.weight = 0;
+                    day.reps = 0;
+                }
+                span.innerHTML = `${day.exercise} ( Previous: ${day.weight} lbs x ${day.reps} reps ) <br>
+                <input type = 'number' class = 'new-weight-input'> lbs x 
+                <input type = 'number' class = 'new-reps-input'> reps`;
+                li.appendChild(span);
+                const newWeight = li.querySelector('.new-weight-input');
+                const newReps = li.querySelector('.new-reps-input');
+
+                const logBtn = document.createElement('button');
+                logBtn.textContent = 'Log';
+                logBtn.className = 'new-log-btn';
+                span.appendChild(logBtn);
+                logBtn.addEventListener('click', () => {
+                    async function newLog(url) {
+                        const response = await fetch(url, {
+                            method: 'POST', 
+                            headers: {
+                                'Content-Type': 'application/json' 
+                            },
+                            body: JSON.stringify({ sessionID: sessionID, exerciseID: day.exercise_id, weight: newWeight.value, reps: newReps.value})
+                        });
+                        const data = await response.json();
+                        
+                        console.log(data);
+                    }
+                    newLog(`/logs`);
+                    span.innerHTML = `${day.exercise} - ${newWeight.value} lbs x ${newReps.value} reps`
+                });
+
+                return li;
+            }
 
             if (!document.getElementById('create-sess-btn')) {
                 const createSession = document.createElement('button');
@@ -69,6 +110,7 @@
                         const data = await response.json();
                         sessionID = data;
                         console.log(sessionID);
+                        getDays(`/days/${value}`, true);
                     }
 
                     newSession(`/sessions`);
@@ -97,59 +139,59 @@
                         li.appendChild(editBtn);
 
                         editBtn.addEventListener('click', () => {
+                            editBtn.style.display = 'none';
+                            deleteBtn.style.display = 'none';
                             if (!inputsCreated) {
-                                const updtedWeight = document.createElement('input');
-                                updtedWeight.type = 'number';
-                                updtedWeight.value = log.weight;
-                                const updtedReps = document.createElement('input');
-                                updtedReps.type = 'number';
-                                updtedReps.value = log.reps;
-                                li.appendChild(updtedWeight);
-                                li.appendChild(updtedReps);
+                                const span2 = document.createElement('span');
+                                span2.innerHTML = `<input type = 'number' class = 'updated-weight-input' value = ${log.weight}> lbs x 
+                                <input type = 'number' class = 'updated-reps-input' value = ${log.reps}> reps`;
+                                li.appendChild(span2);
+                                const updatedWeight = li.querySelector('.updated-weight-input');
+                                const updatedReps = li.querySelector('.updated-reps-input');
+                                span.textContent = `${log.exercise}: `;
                                 inputsCreated = true;
 
                                 const saveBtn = document.createElement('button');
                                 saveBtn.textContent = 'Save';
                                 saveBtn.className = 'save-edit-btn';
-                                li.appendChild(saveBtn);
+                                span2.appendChild(saveBtn);
                                 saveBtn.addEventListener('click', () => {
-                                    async function editLog(url) {
+                                    async function updateLog(url) {
                                         const response = await fetch(url, {
                                             method: 'PATCH',
                                             headers: {
                                                 'Content-Type': 'application/json'
                                             },
-                                            body: JSON.stringify({ weight: updtedWeight.value, reps: updtedReps.value }) 
+                                            body: JSON.stringify({ weight: updatedWeight.value, reps: updatedReps.value }) 
                                         });
                                         const data = await response.json();
                                         
                                         console.log(data.message);
                                         if (data.success) {
-                                            if (updtedWeight.value) {log.weight = updtedWeight.value;}
-                                            if (updtedReps.value) {log.reps = updtedReps.value;}
+                                            if (updatedWeight.value) {log.weight = updatedWeight.value;}
+                                            if (updatedReps.value) {log.reps = updatedReps.value;}
                                             span.textContent = `${log.exercise}: ${log.weight} lbs x ${log.reps} reps`;
-                                            updtedWeight.remove();
-                                            updtedReps.remove();
-                                            saveBtn.remove();
-                                            cancelBtn.remove();
+                                            span2.remove();
+                                            editBtn.style.display = 'inline-block';
+                                            deleteBtn.style.display = 'inline-block';
                                             inputsCreated = false;
                                         } else {
                                            alert(data.message);
                                         }
                                     }
 
-                                    editLog(`/logs/${log.id}`)
+                                    updateLog(`/logs/${log.id}`)
                                 });
                             
                                 const cancelBtn = document.createElement('button');
                                 cancelBtn.textContent = 'Cancel';
                                 cancelBtn.className = 'cancel-edit-btn';
-                                li.appendChild(cancelBtn);
+                                span2.appendChild(cancelBtn);
                                 cancelBtn.addEventListener('click', () => {
-                                    updtedWeight.remove();
-                                    updtedReps.remove();
-                                    saveBtn.remove();
-                                    cancelBtn.remove();
+                                    span.textContent = `${log.exercise}: ${log.weight} lbs x ${log.reps} reps`;
+                                    span2.remove();
+                                    editBtn.style.display = 'inline-block';
+                                    deleteBtn.style.display = 'inline-block';
                                     inputsCreated = false;
                                 });
                             }
