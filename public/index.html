@@ -23,7 +23,14 @@
     <input type="date" id="sess-date" name="sess-date">
     <button type="button" class="submit-date-btn">Go</button> <br>
 
-
+      <!-- things to add
+       1. figure out how the ux should update when new logs r created
+       2. 2 query sess delete check if no logs for sess
+       3. change else in viewsess to show del btn if no logs or add logs
+       4. make session get route return day so old sessions can access getDays
+       5. make backend send back sess id for dup sess to create new logs
+       6. wire up dup sess process to reroute back to getdays creation process
+       7. second query in session post check if sess + day exists -->
 
     <script>
         const dayButton = document.querySelector('.submit-day-btn');
