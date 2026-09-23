@@ -23,81 +23,98 @@
     <input type="date" id="sess-date" name="sess-date">
     <button type="button" class="submit-date-btn">Go</button> <br>
 
-      <!-- things to add
-       1. figure out how the ux should update when new logs r created
-       2. 2 query sess delete check if no logs for sess
-       3. change else in viewsess to show del btn if no logs or add logs
-       4. make session get route return day so old sessions can access getDays
-       5. make backend send back sess id for dup sess to create new logs
-       6. wire up dup sess process to reroute back to getdays creation process
-       7. second query in session post check if sess + day exists -->
+      <!--
+                                                     things to add
+       1. figure out how the ux should update when new logs r created - create valid inputs front end + backend checks ---[DONE]---
+       2. 2 query sess delete check if no logs for sess ---[DONE]---
+       3. change else in viewsess to show del btn if no logs or add logs ---[DONE]---
+       4. make session get route return day so old sessions can access getDays ---[DONE]---
+       5. make backend send back sess id for dup sess to create new logs ---[DONE]---
+       6. set up getdays to create logs for empty sessions ---[DONE]---
+       7. check if session exists, if not no del btn no add btn just msg "no session created" else session + no logs = add btn and del btn ---[DONE]---
+       8. second query in session post check if sess + day exists ---[DONE]--- 
+       9. fix display issues, alerts for something better, ways to clear stale text info on screen
+       10. new query/route to add logs to partially filled sessions 
+       11. clearing things properly and returning them on time, getdays data for instance 
+       -->
 
     <script>
         const dayButton = document.querySelector('.submit-day-btn');
-        const sessButton = document.querySelector('.submit-date-btn');
+        const viewSessionButton = document.querySelector('.submit-date-btn');
         const dayList = document.querySelector('.exercise-list');
         const logList = document.querySelector('.sess-log-list');
         const inputDay = document.querySelector('#day-select');
         const inputDate = document.querySelector('#sess-date');
         let sessionID;
 
-        dayButton.addEventListener('click', () => {
-            const value = inputDay.value;
-            async function getDays(url, displayLogVals) {
-                const response = await fetch(url);
-                const data = await response.json();
-                dayList.innerHTML = '';
-                data.forEach(day => {
-                    if (!displayLogVals) {
-                        const li = document.createElement('li');
-                        li.textContent = day.exercise;
-                        dayList.appendChild(li); 
-                    } else {
-                        const li = logExercise(day);
-                        dayList.appendChild(li);
+        async function getDays(url, createInputFields) {
+            const response = await fetch(url);
+            const data = await response.json();
+            dayList.innerHTML = '';
+            dayList.style.display = 'inline-block';
+            data.forEach(day => {
+                if (!createInputFields) {
+                    const li = document.createElement('li');
+                    li.textContent = day.exercise;
+                    dayList.appendChild(li); 
+                } else {
+                    const li = logExercise(day);
+                    dayList.appendChild(li);
 
-                    }
-                });
-            }
-            getDays(`/days/${value}`, false);
-
-            function logExercise (day) {
-                const li = document.createElement('li');
-                const span = document.createElement('span');
-                if (!day.weight || !day.reps) {
-                    day.weight = 0;
-                    day.reps = 0;
                 }
+            });
+        }
+
+        function logExercise (day) {
+            const li = document.createElement('li');
+            const span = document.createElement('span');
+            if (!day.weight || !day.reps) { 
+                span.innerHTML = `${day.exercise} 
+                <input type = 'number' class = 'new-weight-input'> lbs x 
+                <input type = 'number' class = 'new-reps-input'> reps `;
+            } else {
                 span.innerHTML = `${day.exercise} ( Previous: ${day.weight} lbs x ${day.reps} reps ) <br>
                 <input type = 'number' class = 'new-weight-input'> lbs x 
-                <input type = 'number' class = 'new-reps-input'> reps`;
-                li.appendChild(span);
-                const newWeight = li.querySelector('.new-weight-input');
-                const newReps = li.querySelector('.new-reps-input');
-
-                const logBtn = document.createElement('button');
-                logBtn.textContent = 'Log';
-                logBtn.className = 'new-log-btn';
-                span.appendChild(logBtn);
-                logBtn.addEventListener('click', () => {
-                    async function newLog(url) {
-                        const response = await fetch(url, {
-                            method: 'POST', 
-                            headers: {
-                                'Content-Type': 'application/json' 
-                            },
-                            body: JSON.stringify({ sessionID: sessionID, exerciseID: day.exercise_id, weight: newWeight.value, reps: newReps.value})
-                        });
-                        const data = await response.json();
-                        
-                        console.log(data);
-                    }
-                    newLog(`/logs`);
-                    span.innerHTML = `${day.exercise} - ${newWeight.value} lbs x ${newReps.value} reps`
-                });
-
-                return li;
+                <input type = 'number' class = 'new-reps-input'> reps `;
             }
+            li.appendChild(span);
+            const newWeight = li.querySelector('.new-weight-input');
+            const newReps = li.querySelector('.new-reps-input');
+
+            const logBtn = document.createElement('button');
+            logBtn.textContent = 'Log';
+            logBtn.className = 'new-log-btn';
+            span.appendChild(logBtn);
+            logBtn.addEventListener('click', () => {
+                async function newLog(url) {
+                    const response = await fetch(url, {
+                        method: 'POST', 
+                        headers: {
+                            'Content-Type': 'application/json' 
+                        },
+                        body: JSON.stringify({ sessionID: sessionID, exerciseID: day.exercise_id, weight: newWeight.value, reps: newReps.value})
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        console.log(data.logID);
+                        span.innerHTML = `${day.exercise} - ${newWeight.value} lbs x ${newReps.value} reps`
+                    }else {
+                        alert(data.message);
+                    }
+                }
+                if (newWeight.value < 0 || newReps.value < 0){
+                    alert('No negative values');
+                }else {
+                    newLog(`/logs`);
+                }
+            });
+
+            return li;
+         }
+
+        dayButton.addEventListener('click', () => {
+            const value = inputDay.value;
+            getDays(`/days/${value}`, false);
 
             if (!document.getElementById('create-sess-btn')) {
                 const createSession = document.createElement('button');
@@ -115,25 +132,47 @@
                             body: JSON.stringify({ day: value }) 
                         });
                         const data = await response.json();
-                        sessionID = data;
-                        console.log(sessionID);
-                        getDays(`/days/${value}`, true);
+                        if(!data.duplicate) {
+                            sessionID = data.sessID;
+                            console.log(sessionID);
+                            console.log(data.message);
+                            getDays(`/days/${value}`, true);
+                        } else {
+                            alert(data.message);
+                        }
                     }
 
                     newSession(`/sessions`);
                     createSession.remove();
                 });
+
+                if (!document.getElementById('clear-dayList-btn')) {
+                    const clearList = document.createElement('button');
+                    clearList.textContent = 'Clear';
+                    clearList.id = 'clear-dayList-btn'; 
+                    document.body.appendChild(clearList);
+
+                    clearList.addEventListener('click', () => {
+                        dayList.style.display = 'none';
+                        clearList.remove();
+                        if (document.getElementById('create-sess-btn')) {
+                            createSession.remove();
+                        }
+                    });
+                }
             }
         });
 
-        sessButton.addEventListener('click', () => {
+        viewSessionButton.addEventListener('click', () => {
             const value = inputDate.value;
+            let addLogsClicked;
             async function getLogs(url) {
                 const response = await fetch(url);
                 const data = await response.json();
-                if (data.length > 0) {
-                    logList.innerHTML = '';
-                    data.forEach(log => {
+                if (data.logsExist) {
+                    logList.innerHTML = '<br>';
+                    logList.style.display = 'inline-block';
+                    data.logs.forEach(log => {
                         const li = document.createElement('li');
                         const span = document.createElement('span');
                         span.textContent = `${log.exercise}: ${log.weight} lbs x ${log.reps} reps`;
@@ -223,9 +262,63 @@
                         logList.appendChild(li); 
                     });
                 } else {
-                    logList.innerHTML = 'No logs on this day'
+                    if (data.sessionExists) {
+                        logList.style.display = 'inline-block';
+                        logList.innerHTML = `No workouts logged on ${data.session.date}: `
+
+                        const deleteSessionBtn = document.createElement('button');
+                        deleteSessionBtn.textContent = 'Delete Session';
+                        deleteSessionBtn.id = 'delete-session-btn';
+
+                        deleteSessionBtn.addEventListener('click', () => {
+                            async function delSession(url) {
+                                const response = await fetch(url, {
+                                    method: 'DELETE'
+                                });
+                                const data = await response.json();
+                                logList.innerHTML = data.message;
+                                logList.style.display = 'inline-block';
+                            }
+                            delSession(`/sessions/${data.session.session_id}`);
+                        });
+                        logList.appendChild(deleteSessionBtn);
+
+                        const addLogsBtn = document.createElement('button');
+                        addLogsBtn.textContent = 'Add logs';
+                        addLogsBtn.id = 'delete-session-btn';
+
+                        addLogsBtn.addEventListener('click', () => {
+                            if (document.getElementById('delete-session-btn')) {
+                                deleteSessionBtn.remove();
+                            }
+                            addLogsBtn.remove();
+                            sessionID = data.session.session_id;
+                            getDays(`/days/${data.session.dayLogged}`, true);
+                            addLogsClicked = true;
+                        });
+                        logList.appendChild(addLogsBtn);
+
+                    } else {
+                        logList.innerHTML = data.message;
+                        logList.style.display = 'inline-block';
+                    }
+
                 }
             }
+
+            if (!document.getElementById('clear-logList-btn')) {
+                    const clearList = document.createElement('button');
+                    clearList.textContent = 'Clear';
+                    clearList.id = 'clear-logList-btn'; 
+                    document.body.appendChild(clearList);
+
+                    clearList.addEventListener('click', () => {
+                        logList.style.display = 'none';
+                        dayList.style.display = 'none';
+                        clearList.remove();
+                    });
+                }
+
             getLogs(`/sessions/${value}`);
         });
     </script>
