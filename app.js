@@ -7,6 +7,15 @@ const rows2 = db.prepare('SELECT * FROM sessions').all();
 console.log(rows2);
 const rows3 = db.prepare('SELECT * FROM logs').all();
 console.log(rows3);
+const printEmptyLogs = db.prepare(`
+    SELECT e.exercise, l.weight, l.reps, l.id
+    FROM exercises e
+    JOIN junction j ON j.exerciseRef = e.exercise_id 
+    LEFT JOIN logs l ON l.exerciseRef = e.exercise_id AND l.sessionRef = ?
+    WHERE l.id IS NULL AND j.day = ?
+`).all(6, 1);
+console.log(printEmptyLogs);
+
 
 app.use(express.static('public'));
 app.use(express.json());
@@ -104,25 +113,33 @@ app.get('/sessions/:date', (req, res) => {
         res.json({
             sessionExists: false,
             message: 'No sessiom created for this date'
-        })
+        });
     }
 });
 
-app.get('/sessions/:id/exercises', (req, res) => {
-    const sessionID = req.params.id;
+// view unlogged exercises in existing session
+app.get('/sessions/:id/day/:day', (req, res) => {
+    const { sessionID, day } = req.params;
     const printEmptyLogs = db.prepare(`
-        SELECT e.exercise, l.weight, l.reps, s.date, l.id, s.dayLogged
+        SELECT e.exercise, l.weight, l.reps, l.id
         FROM exercises e
         JOIN junction j ON j.exerciseRef = e.exercise_id 
         LEFT JOIN logs l ON l.exerciseRef = e.exercise_id AND l.sessionRef = ?
-        JOIN sessions s ON s.session_id = l.sessionRef
-        WHERE s.session_id = ?
-    `).all(sessionID, sessionID);
+        WHERE l.id IS NULL AND j.day = ?
+    `).all(sessionID, day);
 
-    console.log(printEmptyLogs);
+    if (printEmptyLogs.length > 0) {
+        res.json({
+            logsExist: true,
+            logs: printEmptyLogs
+        });
+    } else {
+        res.json({
+            logsExist: false,
+            message: 'No unlogged exercises found'
+        });
+    }
 });
-
-
 
 // delete empty sessions
 app.delete('/sessions/:id', (req, res) => {

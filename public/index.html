@@ -81,11 +81,11 @@
             const newWeight = li.querySelector('.new-weight-input');
             const newReps = li.querySelector('.new-reps-input');
 
-            const logBtn = document.createElement('button');
-            logBtn.textContent = 'Log';
-            logBtn.className = 'new-log-btn';
-            span.appendChild(logBtn);
-            logBtn.addEventListener('click', () => {
+            const logExerciseBtn = document.createElement('button');
+            logExerciseBtn.textContent = 'Log';
+            logExerciseBtn.className = 'new-log-btn';
+            span.appendChild(logExerciseBtn);
+            logExerciseBtn.addEventListener('click', () => {
                 async function newLog(url) {
                     const response = await fetch(url, {
                         method: 'POST', 
@@ -147,14 +147,14 @@
                 });
 
                 if (!document.getElementById('clear-dayList-btn')) {
-                    const clearList = document.createElement('button');
-                    clearList.textContent = 'Clear';
-                    clearList.id = 'clear-dayList-btn'; 
-                    document.body.appendChild(clearList);
+                    const clearDayList = document.createElement('button');
+                    clearDayList.textContent = 'Clear';
+                    clearDayList.id = 'clear-dayList-btn'; 
+                    document.body.appendChild(clearDayList);
 
-                    clearList.addEventListener('click', () => {
+                    clearDayList.addEventListener('click', () => {
                         dayList.style.display = 'none';
-                        clearList.remove();
+                        clearDayList.remove();
                         if (document.getElementById('create-sess-btn')) {
                             createSession.remove();
                         }
@@ -170,8 +170,30 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 if (data.logsExist) {
-                    logList.innerHTML = '<br>';
                     logList.style.display = 'inline-block';
+                    logList.innerHTML = '';
+                    const logMoreBtn = document.createElement('button'); 
+                    logMoreBtn.textContent = 'Add more logs';
+                    logMoreBtn.className = 'log-more-btn';
+                    logList.appendChild(logMoreBtn);
+
+                    logMoreBtn.addEventListener('click', () => {
+                        async function getNullLogs(url) {
+                            const response = await fetch(url);
+                            const data = await response.json();
+                            if(data.logsExist) {
+                                data.logs.forEach(log => {
+                                    console.log(log.id);
+                                    // const li = document.createElement('li');
+                                    // const span = document.createElement('span');
+                                    // span.textContent = `test`;
+                                    // li.appendChild(span);
+                                });
+                            }
+                        };
+                        getNullLogs(`/sessions/${data.logs[0].session_id}/day/${data.logs[0].dayLogged}`);
+                    });
+
                     data.logs.forEach(log => {
                         const li = document.createElement('li');
                         const span = document.createElement('span');
@@ -186,7 +208,7 @@
 
                         editBtn.addEventListener('click', () => {
                             editBtn.style.display = 'none';
-                            deleteBtn.style.display = 'none';
+                            deleteLogBtn.style.display = 'none';
                             if (!inputsCreated) {
                                 const span2 = document.createElement('span');
                                 span2.innerHTML = `<input type = 'number' class = 'updated-weight-input' value = ${log.weight}> lbs x 
@@ -197,11 +219,12 @@
                                 span.textContent = `${log.exercise}: `;
                                 inputsCreated = true;
 
-                                const saveBtn = document.createElement('button');
-                                saveBtn.textContent = 'Save';
-                                saveBtn.className = 'save-edit-btn';
-                                span2.appendChild(saveBtn);
-                                saveBtn.addEventListener('click', () => {
+                                const saveEditBtn = document.createElement('button');
+                                saveEditBtn.textContent = 'Save';
+                                saveEditBtn.className = 'save-edit-btn';
+                                span2.appendChild(saveEditBtn);
+
+                                saveEditBtn.addEventListener('click', () => {
                                     async function updateLog(url) {
                                         const response = await fetch(url, {
                                             method: 'PATCH',
@@ -211,7 +234,6 @@
                                             body: JSON.stringify({ weight: updatedWeight.value, reps: updatedReps.value }) 
                                         });
                                         const data = await response.json();
-                                        
                                         console.log(data.message);
                                         if (data.success) {
                                             if (updatedWeight.value) {log.weight = updatedWeight.value;}
@@ -219,36 +241,36 @@
                                             span.textContent = `${log.exercise}: ${log.weight} lbs x ${log.reps} reps`;
                                             span2.remove();
                                             editBtn.style.display = 'inline-block';
-                                            deleteBtn.style.display = 'inline-block';
+                                            deleteLogBtn.style.display = 'inline-block';
                                             inputsCreated = false;
                                         } else {
                                            alert(data.message);
                                         }
                                     }
-
                                     updateLog(`/logs/${log.id}`)
                                 });
                             
-                                const cancelBtn = document.createElement('button');
-                                cancelBtn.textContent = 'Cancel';
-                                cancelBtn.className = 'cancel-edit-btn';
-                                span2.appendChild(cancelBtn);
-                                cancelBtn.addEventListener('click', () => {
+                                const cancelEditBtn = document.createElement('button');
+                                cancelEditBtn.textContent = 'Cancel';
+                                cancelEditBtn.className = 'cancel-edit-btn';
+                                span2.appendChild(cancelEditBtn);
+
+                                cancelEditBtn.addEventListener('click', () => {
                                     span.textContent = `${log.exercise}: ${log.weight} lbs x ${log.reps} reps`;
                                     span2.remove();
                                     editBtn.style.display = 'inline-block';
-                                    deleteBtn.style.display = 'inline-block';
+                                    deleteLogBtn.style.display = 'inline-block';
                                     inputsCreated = false;
                                 });
                             }
                         });
 
-                        const deleteBtn = document.createElement('button');
-                        deleteBtn.textContent = 'Delete';
-                        deleteBtn.className = 'delete-log-btn';
-                        li.appendChild(deleteBtn);
+                        const deleteLogBtn = document.createElement('button');
+                        deleteLogBtn.textContent = 'Delete';
+                        deleteLogBtn.className = 'delete-log-btn';
+                        li.appendChild(deleteLogBtn);
 
-                        deleteBtn.addEventListener('click', () => {
+                        deleteLogBtn.addEventListener('click', () => {
                             async function delLog(url) {
                                 const response = await fetch(url, {
                                     method: 'DELETE'
@@ -258,7 +280,6 @@
                             }
                             delLog(`/logs/${log.id}`);
                         });
-
                         logList.appendChild(li); 
                     });
                 } else {
@@ -285,7 +306,7 @@
 
                         const addLogsBtn = document.createElement('button');
                         addLogsBtn.textContent = 'Add logs';
-                        addLogsBtn.id = 'delete-session-btn';
+                        addLogsBtn.id = 'add-logs-btn';
 
                         addLogsBtn.addEventListener('click', () => {
                             if (document.getElementById('delete-session-btn')) {
@@ -297,25 +318,23 @@
                             addLogsClicked = true;
                         });
                         logList.appendChild(addLogsBtn);
-
                     } else {
                         logList.innerHTML = data.message;
                         logList.style.display = 'inline-block';
                     }
-
                 }
             }
 
             if (!document.getElementById('clear-logList-btn')) {
-                    const clearList = document.createElement('button');
-                    clearList.textContent = 'Clear';
-                    clearList.id = 'clear-logList-btn'; 
-                    document.body.appendChild(clearList);
+                    const clearLogList = document.createElement('button');
+                    clearLogList.textContent = 'Clear';
+                    clearLogList.id = 'clear-logList-btn'; 
+                    document.body.appendChild(clearLogList);
 
-                    clearList.addEventListener('click', () => {
+                    clearLogList.addEventListener('click', () => {
                         logList.style.display = 'none';
                         dayList.style.display = 'none';
-                        clearList.remove();
+                        clearLogList.remove();
                     });
                 }
 
