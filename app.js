@@ -7,15 +7,6 @@ const rows2 = db.prepare('SELECT * FROM sessions').all();
 console.log(rows2);
 const rows3 = db.prepare('SELECT * FROM logs').all();
 console.log(rows3);
-// const printEmptyLogs = db.prepare(`
-//     SELECT e.exercise, l.weight, l.reps, l.id
-//     FROM exercises e
-//     JOIN junction j ON j.exerciseRef = e.exercise_id 
-//     LEFT JOIN logs l ON l.exerciseRef = e.exercise_id AND l.sessionRef = ?
-//     WHERE l.id IS NULL AND j.day = ?
-// `).all(6, 1);
-// console.log(printEmptyLogs);
-
 
 app.use(express.static('public'));
 app.use(express.json());
@@ -26,8 +17,8 @@ app.get('/days/:day', (req, res) => {
     if (dayNum > 0 && dayNum < 7) {
         const dayQuery = db.prepare(`
             WITH ranked AS (
-            SELECT e.exercise, e.exercise_id, l.weight, l.reps,
-            ROW_NUMBER() OVER (PARTITION BY e.exercise_id ORDER BY s.date DESC, l.id DESC) AS rn
+            SELECT e.exercise, e.exercise_id, l.weight, l.reps, j.junction_id,
+            ROW_NUMBER() OVER (PARTITION BY e.exercise_id ORDER BY s.date DESC, l.log_id DESC) AS rn
             FROM exercises e
             JOIN junction j ON j.exerciseRef = e.exercise_id 
             LEFT JOIN logs l ON l.exerciseRef = e.exercise_id
@@ -36,7 +27,8 @@ app.get('/days/:day', (req, res) => {
             )
             SELECT *
             FROM ranked
-            WHERE rn = 1;
+            WHERE rn = 1
+            ORDER BY junction_id ASC;
         `).all(dayNum);
     
         res.json(dayQuery);
@@ -94,7 +86,7 @@ app.get('/sessions/:date', (req, res) => {
     const checkSession = db.prepare('SELECT * FROM sessions WHERE date = ?').get(sessionDate);
     if (checkSession) {
         const printLogInfo = db.prepare(`
-            SELECT e.exercise, l.weight, l.reps, s.date, l.id, s.session_id, s.dayLogged
+            SELECT e.exercise, l.weight, l.reps, s.date, l.log_id, s.session_id, s.dayLogged
             FROM exercises e
             JOIN logs l ON l.exerciseRef = e.exercise_id
             JOIN sessions s ON s.session_id = l.sessionRef
@@ -126,13 +118,13 @@ app.get('/sessions/:date', (req, res) => {
 // view unlogged exercises in existing session
 app.get('/sessions/:id/day/:day', (req, res) => {
     const { id, day } = req.params;
-    console.log(id, day);
     const printEmptyLogs = db.prepare(`
         SELECT e.exercise, e.exercise_id, l.weight, l.reps
         FROM exercises e
         JOIN junction j ON j.exerciseRef = e.exercise_id 
         LEFT JOIN logs l ON l.exerciseRef = e.exercise_id AND l.sessionRef = ?
-        WHERE l.id IS NULL AND j.day = ?
+        WHERE l.log_id IS NULL AND j.day = ?
+        ORDER BY j.junction_id ASC
     `).all(id, day);
 
     if (printEmptyLogs.length > 0) {
@@ -179,7 +171,7 @@ app.delete('/sessions/:id', (req, res) => {
 // delete logs
 app.delete('/logs/:id', (req, res) => {
     const logID = req.params.id;
-    const deleteLog = db.prepare('DELETE FROM logs WHERE id = ?');
+    const deleteLog = db.prepare('DELETE FROM logs WHERE log_id = ?');
     const delInfo = deleteLog.run(logID);
 
     if (delInfo.changes > 0) {
@@ -202,13 +194,13 @@ app.patch('/logs/:id', (req, res) => {
         });
         return;
     } else if (!weight) {
-        const updateLog = db.prepare('UPDATE logs SET reps = ? WHERE ID = ?');
+        const updateLog = db.prepare('UPDATE logs SET reps = ? WHERE log_id = ?');
         updateLog.run(reps, logID);
     } else if (!reps) {
-        const updateLog = db.prepare('UPDATE logs SET weight = ? WHERE ID = ?');
+        const updateLog = db.prepare('UPDATE logs SET weight = ? WHERE log_id = ?');
         updateLog.run(weight, logID);
     } else {
-        const updateLog = db.prepare('UPDATE logs SET weight = ?, reps = ? WHERE ID = ?');
+        const updateLog = db.prepare('UPDATE logs SET weight = ?, reps = ? WHERE log_id = ?');
         updateLog.run(weight, reps, logID);
     }
 

@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS exercises (
 );
 
 CREATE TABLE IF NOT EXISTS junction (
+    junction_id INTEGER PRIMARY KEY AUTOINCREMENT,
     day INTEGER,
     exerciseRef INTEGER,
     FOREIGN KEY(exerciseRef) REFERENCES exercises(exercise_id),
@@ -18,7 +19,7 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 
 CREATE TABLE IF NOT EXISTS logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    log_id INTEGER PRIMARY KEY AUTOINCREMENT,
     sessionRef INTEGER,
     exerciseRef INTEGER,
     weight INTEGER,

@@ -81,7 +81,6 @@
                 } else {
                     const li = logExercise(day);
                     dayList.appendChild(li);
-
                 }
             });
         }
@@ -260,7 +259,7 @@
                                            alert(data.message);
                                         }
                                     }
-                                    updateLog(`/logs/${log.id}`)
+                                    updateLog(`/logs/${log.log_id}`)
                                 });
                             
                                 const cancelEditBtn = document.createElement('button');
@@ -291,7 +290,7 @@
                                 const data = await response.json();
                                 li.innerHTML = data.message;
                             }
-                            delLog(`/logs/${log.id}`);
+                            delLog(`/logs/${log.log_id}`);
                         });
                         logList.appendChild(li); 
                     });
