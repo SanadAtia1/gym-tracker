@@ -7,14 +7,14 @@ const rows2 = db.prepare('SELECT * FROM sessions').all();
 console.log(rows2);
 const rows3 = db.prepare('SELECT * FROM logs').all();
 console.log(rows3);
-const printEmptyLogs = db.prepare(`
-    SELECT e.exercise, l.weight, l.reps, l.id
-    FROM exercises e
-    JOIN junction j ON j.exerciseRef = e.exercise_id 
-    LEFT JOIN logs l ON l.exerciseRef = e.exercise_id AND l.sessionRef = ?
-    WHERE l.id IS NULL AND j.day = ?
-`).all(6, 1);
-console.log(printEmptyLogs);
+// const printEmptyLogs = db.prepare(`
+//     SELECT e.exercise, l.weight, l.reps, l.id
+//     FROM exercises e
+//     JOIN junction j ON j.exerciseRef = e.exercise_id 
+//     LEFT JOIN logs l ON l.exerciseRef = e.exercise_id AND l.sessionRef = ?
+//     WHERE l.id IS NULL AND j.day = ?
+// `).all(6, 1);
+// console.log(printEmptyLogs);
 
 
 app.use(express.static('public'));
@@ -74,6 +74,12 @@ app.post('/logs', (req, res) => {
         });
         return;
     }
+    if (sessionID === null || exerciseID === null) {
+        res.json({
+            success: false,
+            message: 'Invalid input(s) - (session/exercise)'
+        })
+    }
     const createLog = db.prepare('INSERT INTO logs (sessionRef, exerciseRef, weight, reps) VALUES (?, ?, ?, ?)').run(sessionID, exerciseID, weight, reps);
     res.json({
         success: true,
@@ -119,14 +125,15 @@ app.get('/sessions/:date', (req, res) => {
 
 // view unlogged exercises in existing session
 app.get('/sessions/:id/day/:day', (req, res) => {
-    const { sessionID, day } = req.params;
+    const { id, day } = req.params;
+    console.log(id, day);
     const printEmptyLogs = db.prepare(`
-        SELECT e.exercise, l.weight, l.reps, l.id
+        SELECT e.exercise, e.exercise_id, l.weight, l.reps
         FROM exercises e
         JOIN junction j ON j.exerciseRef = e.exercise_id 
         LEFT JOIN logs l ON l.exerciseRef = e.exercise_id AND l.sessionRef = ?
         WHERE l.id IS NULL AND j.day = ?
-    `).all(sessionID, day);
+    `).all(id, day);
 
     if (printEmptyLogs.length > 0) {
         res.json({

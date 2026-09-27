@@ -33,9 +33,12 @@
        6. set up getdays to create logs for empty sessions ---[DONE]---
        7. check if session exists, if not no del btn no add btn just msg "no session created" else session + no logs = add btn and del btn ---[DONE]---
        8. second query in session post check if sess + day exists ---[DONE]--- 
-       9. fix display issues, alerts for something better, ways to clear stale text info on screen
-       10. new query/route to add logs to partially filled sessions 
-       11. clearing things properly and returning them on time, getdays data for instance 
+       9. new query/route to add logs to partially filled sessions ---[DONE]---
+       10. universal clear btn with conditions like clear loglist, daylist, or both ---[DONE]---
+       11. clearing things properly and returning them on time, getdays data for instance ---[DONE]---
+       12. choose whether to hide buttons with dispaly = none or disable/grey them out
+       13. fix display issues, alerts for something better, ways to clear stale text info on screen
+       14. button creating function to clear up space throughout file maybe?
        -->
 
     <script>
@@ -46,6 +49,24 @@
         const inputDay = document.querySelector('#day-select');
         const inputDate = document.querySelector('#sess-date');
         let sessionID;
+
+        function clearLists () {
+            if (!document.getElementById('clear-lists-btn')) {
+                const clearLists = document.createElement('button');
+                clearLists.textContent = 'Clear';
+                clearLists.id = 'clear-lists-btn'; 
+                document.body.appendChild(clearLists);
+
+                clearLists.addEventListener('click', () => {
+                    dayList.style.display = 'none';
+                    logList.style.display = 'none';
+                    clearLists.remove();
+                    if (createSession = document.getElementById('create-sess-btn')) {
+                        createSession.remove();
+                    }
+                });
+            }
+        }
 
         async function getDays(url, createInputFields) {
             const response = await fetch(url);
@@ -146,52 +167,44 @@
                     createSession.remove();
                 });
 
-                if (!document.getElementById('clear-dayList-btn')) {
-                    const clearDayList = document.createElement('button');
-                    clearDayList.textContent = 'Clear';
-                    clearDayList.id = 'clear-dayList-btn'; 
-                    document.body.appendChild(clearDayList);
-
-                    clearDayList.addEventListener('click', () => {
-                        dayList.style.display = 'none';
-                        clearDayList.remove();
-                        if (document.getElementById('create-sess-btn')) {
-                            createSession.remove();
-                        }
-                    });
-                }
+                clearLists();
             }
         });
 
         viewSessionButton.addEventListener('click', () => {
             const value = inputDate.value;
             let addLogsClicked;
+            logList.style.display = 'inline-block';
             async function getLogs(url) {
                 const response = await fetch(url);
                 const data = await response.json();
                 if (data.logsExist) {
-                    logList.style.display = 'inline-block';
                     logList.innerHTML = '';
+
                     const logMoreBtn = document.createElement('button'); 
                     logMoreBtn.textContent = 'Add more logs';
                     logMoreBtn.className = 'log-more-btn';
                     logList.appendChild(logMoreBtn);
+                    sessionID = data.logs[0].session_id;
+                    console.log(sessionID, data.logs[0].dayLogged);
 
                     logMoreBtn.addEventListener('click', () => {
                         async function getNullLogs(url) {
                             const response = await fetch(url);
                             const data = await response.json();
                             if(data.logsExist) {
+                                logMoreBtn.style.display = 'none';
                                 data.logs.forEach(log => {
-                                    console.log(log.id);
-                                    // const li = document.createElement('li');
-                                    // const span = document.createElement('span');
-                                    // span.textContent = `test`;
-                                    // li.appendChild(span);
+                                    const li = logExercise(log);
+                                    logList.appendChild(li);
+
                                 });
+                            } else {
+                                logMoreBtn.disabled = true;
+                                alert(data.message);
                             }
                         };
-                        getNullLogs(`/sessions/${data.logs[0].session_id}/day/${data.logs[0].dayLogged}`);
+                        getNullLogs(`/sessions/${sessionID}/day/${data.logs[0].dayLogged}`);
                     });
 
                     data.logs.forEach(log => {
@@ -284,7 +297,6 @@
                     });
                 } else {
                     if (data.sessionExists) {
-                        logList.style.display = 'inline-block';
                         logList.innerHTML = `No workouts logged on ${data.session.date}: `
 
                         const deleteSessionBtn = document.createElement('button');
@@ -298,7 +310,6 @@
                                 });
                                 const data = await response.json();
                                 logList.innerHTML = data.message;
-                                logList.style.display = 'inline-block';
                             }
                             delSession(`/sessions/${data.session.session_id}`);
                         });
@@ -320,23 +331,11 @@
                         logList.appendChild(addLogsBtn);
                     } else {
                         logList.innerHTML = data.message;
-                        logList.style.display = 'inline-block';
                     }
                 }
             }
 
-            if (!document.getElementById('clear-logList-btn')) {
-                    const clearLogList = document.createElement('button');
-                    clearLogList.textContent = 'Clear';
-                    clearLogList.id = 'clear-logList-btn'; 
-                    document.body.appendChild(clearLogList);
-
-                    clearLogList.addEventListener('click', () => {
-                        logList.style.display = 'none';
-                        dayList.style.display = 'none';
-                        clearLogList.remove();
-                    });
-                }
+            clearLists();
 
             getLogs(`/sessions/${value}`);
         });
