@@ -5,6 +5,7 @@
 </head>
 <body>
     
+    <div id="message-handler"> </div>
     <li class="exercise-list"></li> <br>
     <li class="sess-log-list"></li>
 
@@ -36,12 +37,15 @@
        9. new query/route to add logs to partially filled sessions ---[DONE]---
        10. universal clear btn with conditions like clear loglist, daylist, or both ---[DONE]---
        11. clearing things properly and returning them on time, getdays data for instance ---[DONE]---
-       12. choose whether to hide buttons with dispaly = none or disable/grey them out
-       13. fix display issues, alerts for something better, ways to clear stale text info on screen
+       12. choose whether to hide buttons with dispaly = none or disable/grey them out ---[DONE]---
+       13. fix display issues, alerts for something better, ways to clear stale text info on screen ---[DONE]---
        14. button creating function to clear up space throughout file maybe?
+       15. div to display messages from backend on screen ---[DONE]---
+       16. maybe instead of clear button, timed function to return things to how they are post clear click
        -->
 
     <script>
+        const msgDiv = document.getElementById('message-handler');
         const dayButton = document.querySelector('.submit-day-btn');
         const viewSessionButton = document.querySelector('.submit-date-btn');
         const dayList = document.querySelector('.exercise-list');
@@ -49,6 +53,22 @@
         const inputDay = document.querySelector('#day-select');
         const inputDate = document.querySelector('#sess-date');
         let sessionID;
+        let prevTimer;
+
+        function displayMsg (text, isError) {
+            if (prevTimer > 0) {
+                clearTimeout(prevTimer);
+            }
+            if (isError) {
+                msgDiv.classList.add('error');
+            }
+            msgDiv.textContent = text;
+
+            prevTimer = setTimeout(() => {
+                msgDiv.textContent = '';
+                msgDiv.classList.remove('error');
+            }, 4500);
+        }
 
         function clearLists () {
             if (!document.getElementById('clear-lists-btn')) {
@@ -116,14 +136,13 @@
                     });
                     const data = await response.json();
                     if (data.success) {
-                        console.log(data.logID);
                         span.innerHTML = `${day.exercise} - ${newWeight.value} lbs x ${newReps.value} reps`
                     }else {
-                        alert(data.message);
+                        displayMsg(data.message, true);
                     }
                 }
                 if (newWeight.value < 0 || newReps.value < 0){
-                    alert('No negative values');
+                    displayMsg('No negative values', true);
                 }else {
                     newLog(`/logs`);
                 }
@@ -154,11 +173,10 @@
                         const data = await response.json();
                         if(!data.duplicate) {
                             sessionID = data.sessID;
-                            console.log(sessionID);
-                            console.log(data.message);
+                            displayMsg(data.message, false);
                             getDays(`/days/${value}`, true);
                         } else {
-                            alert(data.message);
+                            displayMsg(data.message, true);
                         }
                     }
 
@@ -172,7 +190,6 @@
 
         viewSessionButton.addEventListener('click', () => {
             const value = inputDate.value;
-            let addLogsClicked;
             logList.style.display = 'inline-block';
             async function getLogs(url) {
                 const response = await fetch(url);
@@ -185,22 +202,21 @@
                     logMoreBtn.className = 'log-more-btn';
                     logList.appendChild(logMoreBtn);
                     sessionID = data.logs[0].session_id;
-                    console.log(sessionID, data.logs[0].dayLogged);
 
                     logMoreBtn.addEventListener('click', () => {
                         async function getNullLogs(url) {
                             const response = await fetch(url);
                             const data = await response.json();
                             if(data.logsExist) {
-                                logMoreBtn.style.display = 'none';
+                                logMoreBtn.remove();
                                 data.logs.forEach(log => {
                                     const li = logExercise(log);
                                     logList.appendChild(li);
 
                                 });
                             } else {
-                                logMoreBtn.disabled = true;
-                                alert(data.message);
+                                logMoreBtn.remove();
+                                displayMsg(data.message, true);
                             }
                         };
                         getNullLogs(`/sessions/${sessionID}/day/${data.logs[0].dayLogged}`);
@@ -255,8 +271,9 @@
                                             editBtn.style.display = 'inline-block';
                                             deleteLogBtn.style.display = 'inline-block';
                                             inputsCreated = false;
+                                            displayMsg(data.message, false);
                                         } else {
-                                           alert(data.message);
+                                           displayMsg(data.message, true);
                                         }
                                     }
                                     updateLog(`/logs/${log.log_id}`)
@@ -288,7 +305,8 @@
                                     method: 'DELETE'
                                 });
                                 const data = await response.json();
-                                li.innerHTML = data.message;
+                                li.innerHTML = '';
+                                displayMsg(data.message, false);
                             }
                             delLog(`/logs/${log.log_id}`);
                         });
@@ -308,7 +326,8 @@
                                     method: 'DELETE'
                                 });
                                 const data = await response.json();
-                                logList.innerHTML = data.message;
+                                logList.innerHTML = 'No session on this day';
+                                displayMsg(data.message, false);
                             }
                             delSession(`/sessions/${data.session.session_id}`);
                         });
@@ -325,11 +344,10 @@
                             addLogsBtn.remove();
                             sessionID = data.session.session_id;
                             getDays(`/days/${data.session.dayLogged}`, true);
-                            addLogsClicked = true;
                         });
                         logList.appendChild(addLogsBtn);
                     } else {
-                        logList.innerHTML = data.message;
+                        displayMsg(data.message, true);
                     }
                 }
             }
