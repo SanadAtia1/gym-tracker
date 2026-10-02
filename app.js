@@ -110,7 +110,7 @@ app.get('/sessions/:date', (req, res) => {
     } else {
         res.json({
             sessionExists: false,
-            message: 'No sessiom created for this date'
+            message: 'No session on this day'
         });
     }
 });

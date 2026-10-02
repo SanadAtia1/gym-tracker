@@ -2,14 +2,36 @@
 <html lang="en">
 <head>
     <title>Gym tracker!</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     
     <div id="message-handler"> </div>
-    <li class="exercise-list"></li> <br>
-    <li class="sess-log-list"></li>
+    <!-- <li class="exercise-list"></li> <br>
+    <li class="sess-log-list"></li> -->
 
-    <label for="day">View exercises by day:</label>
+    <div class="container">
+      <div class="day-section">
+        <li class="exercise-list"></li> <br>
+        <label for="day">View exercises by day:</label>
+        <select id="day-select" name="day">
+            <option value="1">Day 1</option>
+            <option value="2">Day 2</option>
+            <option value="3">Day 3</option>
+            <option value="4">Day 4</option>
+            <option value="5">Day 5</option>
+            <option value="6">Day 6</option>
+        </select>
+        <button type="button" class="submit-day-btn">Go</button>
+      </div>
+      <div class="session-section">
+        <li class="sess-log-list"></li>
+        <label for="sess-date">View session on:</label>
+        <input type="date" id="sess-date" name="sess-date">
+        <button type="button" class="submit-date-btn">Go</button> <br>
+      </div>
+    </div>
+    <!-- <label for="day">View exercises by day:</label>
     <select id="day-select" name="day">
         <option value="1">Day 1</option>
         <option value="2">Day 2</option>
@@ -17,14 +39,15 @@
         <option value="4">Day 4</option>
         <option value="5">Day 5</option>
         <option value="6">Day 6</option>
-      </select>
-    <button type="button" class="submit-day-btn">Go</button> <br><br>
+      </select> 
+    <button type="button" class="submit-day-btn">Go</button>
 
     <label for="sess-date">View session on:</label>
     <input type="date" id="sess-date" name="sess-date">
-    <button type="button" class="submit-date-btn">Go</button> <br>
+    <button type="button" class="submit-date-btn">Go</button>-->
 
-      <!--
+    <script src="script.js"></script>
+     <!--
                                                      things to add
        1. figure out how the ux should update when new logs r created - create valid inputs front end + backend checks ---[DONE]---
        2. 2 query sess delete check if no logs for sess ---[DONE]---
@@ -39,324 +62,10 @@
        11. clearing things properly and returning them on time, getdays data for instance ---[DONE]---
        12. choose whether to hide buttons with dispaly = none or disable/grey them out ---[DONE]---
        13. fix display issues, alerts for something better, ways to clear stale text info on screen ---[DONE]---
-       14. button creating function to clear up space throughout file maybe?
+       14. button creating function to clear up space throughout file maybe? ---[DONE]---
        15. div to display messages from backend on screen ---[DONE]---
-       16. maybe instead of clear button, timed function to return things to how they are post clear click
+       16. maybe instead of clear button, timed function to return things to how they are post clear click [[[no]]]
        -->
-
-    <script>
-        const msgDiv = document.getElementById('message-handler');
-        const dayButton = document.querySelector('.submit-day-btn');
-        const viewSessionButton = document.querySelector('.submit-date-btn');
-        const dayList = document.querySelector('.exercise-list');
-        const logList = document.querySelector('.sess-log-list');
-        const inputDay = document.querySelector('#day-select');
-        const inputDate = document.querySelector('#sess-date');
-        let sessionID;
-        let prevTimer;
-
-        function displayMsg (text, isError) {
-            if (prevTimer > 0) {
-                clearTimeout(prevTimer);
-            }
-            if (isError) {
-                msgDiv.classList.add('error');
-            }
-            msgDiv.textContent = text;
-
-            prevTimer = setTimeout(() => {
-                msgDiv.textContent = '';
-                msgDiv.classList.remove('error');
-            }, 4500);
-        }
-
-        function clearLists () {
-            if (!document.getElementById('clear-lists-btn')) {
-                const clearLists = document.createElement('button');
-                clearLists.textContent = 'Clear';
-                clearLists.id = 'clear-lists-btn'; 
-                document.body.appendChild(clearLists);
-
-                clearLists.addEventListener('click', () => {
-                    dayList.style.display = 'none';
-                    logList.style.display = 'none';
-                    clearLists.remove();
-                    if (createSession = document.getElementById('create-sess-btn')) {
-                        createSession.remove();
-                    }
-                });
-            }
-        }
-
-        async function getDays(url, createInputFields) {
-            const response = await fetch(url);
-            const data = await response.json();
-            dayList.innerHTML = '';
-            dayList.style.display = 'inline-block';
-            data.forEach(day => {
-                if (!createInputFields) {
-                    const li = document.createElement('li');
-                    li.textContent = day.exercise;
-                    dayList.appendChild(li); 
-                } else {
-                    const li = logExercise(day);
-                    dayList.appendChild(li);
-                }
-            });
-        }
-
-        function logExercise (day) {
-            const li = document.createElement('li');
-            const span = document.createElement('span');
-            if (!day.weight || !day.reps) { 
-                span.innerHTML = `${day.exercise} 
-                <input type = 'number' class = 'new-weight-input'> lbs x 
-                <input type = 'number' class = 'new-reps-input'> reps `;
-            } else {
-                span.innerHTML = `${day.exercise} ( Previous: ${day.weight} lbs x ${day.reps} reps ) <br>
-                <input type = 'number' class = 'new-weight-input'> lbs x 
-                <input type = 'number' class = 'new-reps-input'> reps `;
-            }
-            li.appendChild(span);
-            const newWeight = li.querySelector('.new-weight-input');
-            const newReps = li.querySelector('.new-reps-input');
-
-            const logExerciseBtn = document.createElement('button');
-            logExerciseBtn.textContent = 'Log';
-            logExerciseBtn.className = 'new-log-btn';
-            span.appendChild(logExerciseBtn);
-            logExerciseBtn.addEventListener('click', () => {
-                async function newLog(url) {
-                    const response = await fetch(url, {
-                        method: 'POST', 
-                        headers: {
-                            'Content-Type': 'application/json' 
-                        },
-                        body: JSON.stringify({ sessionID: sessionID, exerciseID: day.exercise_id, weight: newWeight.value, reps: newReps.value})
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        span.innerHTML = `${day.exercise} - ${newWeight.value} lbs x ${newReps.value} reps`
-                    }else {
-                        displayMsg(data.message, true);
-                    }
-                }
-                if (newWeight.value < 0 || newReps.value < 0){
-                    displayMsg('No negative values', true);
-                }else {
-                    newLog(`/logs`);
-                }
-            });
-
-            return li;
-         }
-
-        dayButton.addEventListener('click', () => {
-            const value = inputDay.value;
-            getDays(`/days/${value}`, false);
-
-            if (!document.getElementById('create-sess-btn')) {
-                const createSession = document.createElement('button');
-                createSession.textContent = 'Create new session';
-                createSession.id = 'create-sess-btn'; 
-                document.body.appendChild(createSession);
-
-                createSession.addEventListener('click', () => {
-                    async function newSession(url) {
-                        const response = await fetch(url, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ day: value }) 
-                        });
-                        const data = await response.json();
-                        if(!data.duplicate) {
-                            sessionID = data.sessID;
-                            displayMsg(data.message, false);
-                            getDays(`/days/${value}`, true);
-                        } else {
-                            displayMsg(data.message, true);
-                        }
-                    }
-
-                    newSession(`/sessions`);
-                    createSession.remove();
-                });
-
-                clearLists();
-            }
-        });
-
-        viewSessionButton.addEventListener('click', () => {
-            const value = inputDate.value;
-            logList.style.display = 'inline-block';
-            async function getLogs(url) {
-                const response = await fetch(url);
-                const data = await response.json();
-                if (data.logsExist) {
-                    logList.innerHTML = '';
-
-                    const logMoreBtn = document.createElement('button'); 
-                    logMoreBtn.textContent = 'Add more logs';
-                    logMoreBtn.className = 'log-more-btn';
-                    logList.appendChild(logMoreBtn);
-                    sessionID = data.logs[0].session_id;
-
-                    logMoreBtn.addEventListener('click', () => {
-                        async function getNullLogs(url) {
-                            const response = await fetch(url);
-                            const data = await response.json();
-                            if(data.logsExist) {
-                                logMoreBtn.remove();
-                                data.logs.forEach(log => {
-                                    const li = logExercise(log);
-                                    logList.appendChild(li);
-
-                                });
-                            } else {
-                                logMoreBtn.remove();
-                                displayMsg(data.message, true);
-                            }
-                        };
-                        getNullLogs(`/sessions/${sessionID}/day/${data.logs[0].dayLogged}`);
-                    });
-
-                    data.logs.forEach(log => {
-                        const li = document.createElement('li');
-                        const span = document.createElement('span');
-                        span.textContent = `${log.exercise}: ${log.weight} lbs x ${log.reps} reps`;
-                        li.appendChild(span);
-
-                        let inputsCreated = false;
-                        const editBtn = document.createElement('button');
-                        editBtn.textContent = 'Edit';
-                        editBtn.className = 'edit-log-btn';
-                        li.appendChild(editBtn);
-
-                        editBtn.addEventListener('click', () => {
-                            editBtn.style.display = 'none';
-                            deleteLogBtn.style.display = 'none';
-                            if (!inputsCreated) {
-                                const span2 = document.createElement('span');
-                                span2.innerHTML = `<input type = 'number' class = 'updated-weight-input' value = ${log.weight}> lbs x 
-                                <input type = 'number' class = 'updated-reps-input' value = ${log.reps}> reps`;
-                                li.appendChild(span2);
-                                const updatedWeight = li.querySelector('.updated-weight-input');
-                                const updatedReps = li.querySelector('.updated-reps-input');
-                                span.textContent = `${log.exercise}: `;
-                                inputsCreated = true;
-
-                                const saveEditBtn = document.createElement('button');
-                                saveEditBtn.textContent = 'Save';
-                                saveEditBtn.className = 'save-edit-btn';
-                                span2.appendChild(saveEditBtn);
-
-                                saveEditBtn.addEventListener('click', () => {
-                                    async function updateLog(url) {
-                                        const response = await fetch(url, {
-                                            method: 'PATCH',
-                                            headers: {
-                                                'Content-Type': 'application/json'
-                                            },
-                                            body: JSON.stringify({ weight: updatedWeight.value, reps: updatedReps.value }) 
-                                        });
-                                        const data = await response.json();
-                                        console.log(data.message);
-                                        if (data.success) {
-                                            if (updatedWeight.value) {log.weight = updatedWeight.value;}
-                                            if (updatedReps.value) {log.reps = updatedReps.value;}
-                                            span.textContent = `${log.exercise}: ${log.weight} lbs x ${log.reps} reps`;
-                                            span2.remove();
-                                            editBtn.style.display = 'inline-block';
-                                            deleteLogBtn.style.display = 'inline-block';
-                                            inputsCreated = false;
-                                            displayMsg(data.message, false);
-                                        } else {
-                                           displayMsg(data.message, true);
-                                        }
-                                    }
-                                    updateLog(`/logs/${log.log_id}`)
-                                });
-                            
-                                const cancelEditBtn = document.createElement('button');
-                                cancelEditBtn.textContent = 'Cancel';
-                                cancelEditBtn.className = 'cancel-edit-btn';
-                                span2.appendChild(cancelEditBtn);
-
-                                cancelEditBtn.addEventListener('click', () => {
-                                    span.textContent = `${log.exercise}: ${log.weight} lbs x ${log.reps} reps`;
-                                    span2.remove();
-                                    editBtn.style.display = 'inline-block';
-                                    deleteLogBtn.style.display = 'inline-block';
-                                    inputsCreated = false;
-                                });
-                            }
-                        });
-
-                        const deleteLogBtn = document.createElement('button');
-                        deleteLogBtn.textContent = 'Delete';
-                        deleteLogBtn.className = 'delete-log-btn';
-                        li.appendChild(deleteLogBtn);
-
-                        deleteLogBtn.addEventListener('click', () => {
-                            async function delLog(url) {
-                                const response = await fetch(url, {
-                                    method: 'DELETE'
-                                });
-                                const data = await response.json();
-                                li.innerHTML = '';
-                                displayMsg(data.message, false);
-                            }
-                            delLog(`/logs/${log.log_id}`);
-                        });
-                        logList.appendChild(li); 
-                    });
-                } else {
-                    if (data.sessionExists) {
-                        logList.innerHTML = `No workouts logged on ${data.session.date}: `
-
-                        const deleteSessionBtn = document.createElement('button');
-                        deleteSessionBtn.textContent = 'Delete Session';
-                        deleteSessionBtn.id = 'delete-session-btn';
-
-                        deleteSessionBtn.addEventListener('click', () => {
-                            async function delSession(url) {
-                                const response = await fetch(url, {
-                                    method: 'DELETE'
-                                });
-                                const data = await response.json();
-                                logList.innerHTML = 'No session on this day';
-                                displayMsg(data.message, false);
-                            }
-                            delSession(`/sessions/${data.session.session_id}`);
-                        });
-                        logList.appendChild(deleteSessionBtn);
-
-                        const addLogsBtn = document.createElement('button');
-                        addLogsBtn.textContent = 'Add logs';
-                        addLogsBtn.id = 'add-logs-btn';
-
-                        addLogsBtn.addEventListener('click', () => {
-                            if (document.getElementById('delete-session-btn')) {
-                                deleteSessionBtn.remove();
-                            }
-                            addLogsBtn.remove();
-                            sessionID = data.session.session_id;
-                            getDays(`/days/${data.session.dayLogged}`, true);
-                        });
-                        logList.appendChild(addLogsBtn);
-                    } else {
-                        displayMsg(data.message, true);
-                    }
-                }
-            }
-
-            clearLists();
-
-            getLogs(`/sessions/${value}`);
-        });
-    </script>
     
 </body>
 </html>
