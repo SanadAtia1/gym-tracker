@@ -1,7 +1,16 @@
 :root {
-    --primary-color: #000000; 
-    --accent-color: #292929;
-    --text-color: #E2E800;
+    --primary-color: #171717; 
+    --accent-color: #222222;
+    --border-color: #282828;
+    --text-color: #e5e5e5;
+    --description-color: #888888;
+    --interactive-color: #00f0ff;
+  }
+
+  .custom-input {
+    -webkit-appearance: none; /* Safari, Chrome, Older Edge */
+    -moz-appearance: none;    /* Firefox */
+    appearance: none;         /* Standard modern syntax */
   }
 
   body {
@@ -11,31 +20,120 @@
     font-weight: 500;
   }
 
+  #message-handler {
+    color: var(--description-color);
+    background-color: var(--accent-color);
+    border-color: var(--interactive-color);
+  }
+
   .container {
     display: flex;
+    min-height: 75vh;
     justify-content: center;
-    gap: 100px;
+    align-items: center;
+    gap: 76px;
   }
 
-  .day-section {
+  .day-section, .session-section {
     background-color: var(--accent-color);
     border-radius: 12px;
+    padding: 50px;
+    min-height: 20vh;
+    list-style: none;
   }
 
-  .session-section {
-    background-color: var(--accent-color);
-    border-radius: 12px;
+  #day-header, #session-header  {
+    color: var(--interactive-color);
+    font-weight: 600;
+    font-size: large;
   }
 
-  .submit-day-btn {
-    background-color: var(--primary-color);
-    color: var(--text-color);
+  .submit-day-btn, #day-select, #create-sess-btn, #sess-date, 
+  .submit-date-btn, #clear-dayList-btn, #clear-logList-btn, #new-log-btn,
+  #log-more-btn, #edit-log-btn, #save-edit-btn, #cancel-edit-btn, #delete-log-btn,
+  #delete-session-btn, #add-logs-btn {
     border-radius: 5px;
-    border-color: #000000;
+    padding: 5px 17px;
+    border: 2px solid transparent; 
+    transition: border-color 0.3s ease; 
+    gap: 2px;
   }
 
-  #day-select {
-    background-color: var(--primary-color);
-    color: var(--text-color);
-    
+  .new-weight-input, .new-reps-input,
+  .updated-weight-input, .updated-reps-input {
+    width: 70px;
+    height: 30px;
+    border-radius: 5px;
+    border: 2px solid transparent; 
+    transition: border-color 0.3s ease; 
+   
+  }
+
+  .new-weight-input:hover, .new-reps-input:hover, .updated-weight-input:hover, .updated-reps-input:hover,
+  .submit-day-btn:hover, #day-select:hover, #create-sess-btn:hover, #sess-date:hover, 
+  .submit-date-btn:hover, #clear-dayList-btn:hover, #clear-logList-btn:hover,#new-log-btn:hover,
+  #log-more-btn:hover, #edit-log-btn:hover, #add-logs-btn:hover {
+    border-color: var(--interactive-color);
+  }
+
+  #save-edit-btn:hover {
+    border-color: green;
+  }
+  #cancel-edit-btn:hover, #delete-log-btn:hover, #delete-session-btn:hover {
+    border-color: red;
+  }
+
+  #edit-log-btn {
+    background-image: url('/images/edit.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    color: transparent; 
+    width: 40px;  
+    height: 30px;  
+    cursor: pointer;
+  }
+
+  #save-edit-btn {
+    background-image: url('/images/save.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    color: transparent; 
+    width: 15px;  
+    height: 30px;  
+    cursor: pointer;
+  }
+
+  #cancel-edit-btn {
+    background-image: url('/images/cancel.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    color: transparent; 
+    width: 40px;  
+    height: 30px;  
+    cursor: pointer;
+  }
+
+  #delete-log-btn, #delete-session-btn {
+    background-image: url('/images/delete.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    color: transparent; 
+    width: 15px;  
+    height: 30px;  
+    cursor: pointer;
+  }
+
+  .submit-date-btn, .submit-day-btn {
+    background-image: url('/images/arrow.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    color: transparent; 
+    width: 40px;  
+    height: 30px;  
+    cursor: pointer;
   }

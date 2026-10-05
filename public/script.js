@@ -5,6 +5,11 @@ const msgDiv = document.getElementById('message-handler');
         const logList = document.querySelector('.sess-log-list');
         const inputDay = document.querySelector('#day-select');
         const inputDate = document.querySelector('#sess-date');
+        const containerDiv = document.querySelector('.container');
+        const dayDiv = document.querySelector('.day-section');
+        const sessionDiv = document.querySelector('.session-section');
+        const dayHead = document.getElementById('day-header');
+        const sessHead = document.getElementById('session-header');
         let sessionID;
         let prevTimer;
 
@@ -28,22 +33,6 @@ const msgDiv = document.getElementById('message-handler');
                 msgDiv.textContent = '';
                 msgDiv.classList.remove('error');
             }, 4500);
-        }
-
-        function clearLists() {
-            if (!document.getElementById('clear-lists-btn')) {
-                const clearLists = createBtn('Clear', 'clear-lists-btn');
-                document.body.appendChild(clearLists);
-
-                clearLists.addEventListener('click', () => {
-                    dayList.style.display = 'none';
-                    logList.style.display = 'none';
-                    clearLists.remove();
-                    if (createSession = document.getElementById('create-sess-btn')) {
-                        createSession.remove();
-                    }
-                });
-            }
         }
 
         async function getDays(url, createInputFields) {
@@ -108,13 +97,49 @@ const msgDiv = document.getElementById('message-handler');
             return li;
          }
 
+         if (!document.getElementById('clear-dayList-btn')) {
+            const clearDaylist = createBtn('Clear', 'clear-dayList-btn');
+            dayDiv.appendChild(clearDaylist);
+
+            clearDaylist.addEventListener('click', () => {
+                dayList.style.display = 'none';
+                if (createSession = document.getElementById('create-sess-btn')) {
+                    createSession.remove();
+                }
+               dayHead.innerText = 'View exercises - Begin logging' 
+            });
+        }
+
+        if (!document.getElementById('clear-logList-btn')) {
+            const clearLoglist = createBtn('Clear', 'clear-logList-btn');
+            sessionDiv.appendChild(clearLoglist);
+
+            clearLoglist.addEventListener('click', () => {
+                logList.style.display = 'none';
+                sessHead.innerText = 'View/Edit/Delete Sessions'
+            });
+        }
+
         dayButton.addEventListener('click', () => {
             const value = inputDay.value;
+            if(value == 1) {
+                dayHead.innerText = `Day ${value} Upper A`;
+            } else if(value == 2) {
+                dayHead.innerText = `Day ${value} Lower A`;
+            } else if(value == 3) {
+                dayHead.innerText = `Day ${value} Upper B`;
+            } else if(value == 4) {
+                dayHead.innerText = `Day ${value} Lower B`;
+            } else if(value == 5) {
+                dayHead.innerText = `Day ${value} Upper C`;
+            } else {
+                dayHead.innerText = `Day ${value} Plyometrics`;
+            }
             getDays(`/days/${value}`, false);
 
             if (!document.getElementById('create-sess-btn')) {
                 const createSession = createBtn('Create new session', 'create-sess-btn');
-                dayList.appendChild(createSession);
+                dayDiv.appendChild(createSession);
 
                 createSession.addEventListener('click', () => {
                     async function newSession(url) {
@@ -138,19 +163,18 @@ const msgDiv = document.getElementById('message-handler');
                     newSession(`/sessions`);
                     createSession.remove();
                 });
-
-                clearLists();
             }
         });
 
         viewSessionButton.addEventListener('click', () => {
             const value = inputDate.value;
             logList.style.display = 'inline-block';
+            logList.innerHTML = '';
             async function getLogs(url) {
                 const response = await fetch(url);
                 const data = await response.json();
                 if (data.logsExist) {
-                    logList.innerHTML = `Logged day ${data.logs[0].dayLogged} on ${data.logs[0].date} `;
+                    sessHead.innerText= `Day ${data.logs[0].dayLogged} - Logged on ${data.logs[0].date} `;
 
                     const logMoreBtn = createBtn('Add more logs', 'log-more-btn');
                     logList.appendChild(logMoreBtn);
@@ -292,8 +316,6 @@ const msgDiv = document.getElementById('message-handler');
                     }
                 }
             }
-
-            clearLists();
 
             getLogs(`/sessions/${value}`);
         });
