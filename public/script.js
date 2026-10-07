@@ -43,6 +43,7 @@ const msgDiv = document.getElementById('message-handler');
             data.forEach(day => {
                 if (!createInputFields) {
                     const li = document.createElement('li');
+                    li.className = 'list-elements';
                     li.textContent = day.exercise;
                     dayList.appendChild(li); 
                 } else {
@@ -54,6 +55,7 @@ const msgDiv = document.getElementById('message-handler');
 
         function logExercise(day) {
             const li = document.createElement('li');
+            li.className = 'list-elements';
             const span = document.createElement('span');
             if (!day.weight || !day.reps) { 
                 span.innerHTML = `${day.exercise} 
@@ -201,6 +203,7 @@ const msgDiv = document.getElementById('message-handler');
 
                     data.logs.forEach(log => {
                         const li = document.createElement('li');
+                        li.className = 'list-elements';
                         const span = document.createElement('span');
                         span.textContent = `${log.exercise}: ${log.weight} lbs x ${log.reps} reps`;
                         li.appendChild(span);

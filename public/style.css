@@ -3,8 +3,8 @@
     --accent-color: #222222;
     --border-color: #282828;
     --text-color: #e5e5e5;
-    --description-color: #888888;
-    --interactive-color: #00f0ff;
+    --description-color: #A8AAAD;
+    --interactive-color: #FFDB58;
   }
 
   .custom-input {
@@ -39,6 +39,8 @@
     border-radius: 12px;
     padding: 50px;
     min-height: 20vh;
+    max-width: 60vh;
+    min-width: 40vh;
     list-style: none;
   }
 
@@ -48,10 +50,21 @@
     font-size: large;
   }
 
+  .list-elements {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* #clear-dayList-btn {
+  
+  } */
+
   .submit-day-btn, #day-select, #create-sess-btn, #sess-date, 
   .submit-date-btn, #clear-dayList-btn, #clear-logList-btn, #new-log-btn,
   #log-more-btn, #edit-log-btn, #save-edit-btn, #cancel-edit-btn, #delete-log-btn,
   #delete-session-btn, #add-logs-btn {
+    background-color: var(--description-color);
     border-radius: 5px;
     padding: 5px 17px;
     border: 2px solid transparent; 
@@ -59,12 +72,17 @@
     gap: 2px;
   }
 
+  #day-select, #sess-date {
+    background-color: var(--description-color);
+  }
+
   .new-weight-input, .new-reps-input,
   .updated-weight-input, .updated-reps-input {
     width: 70px;
     height: 30px;
     border-radius: 5px;
-    border: 2px solid transparent; 
+    border: 2px solid; 
+    border-color: var(--description-color);
     transition: border-color 0.3s ease; 
    
   }
@@ -74,6 +92,8 @@
   .submit-date-btn:hover, #clear-dayList-btn:hover, #clear-logList-btn:hover,#new-log-btn:hover,
   #log-more-btn:hover, #edit-log-btn:hover, #add-logs-btn:hover {
     border-color: var(--interactive-color);
+    background-color: white;
+    cursor: pointer;
   }
 
   #save-edit-btn:hover {
