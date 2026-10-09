@@ -66,7 +66,7 @@ app.post('/logs', (req, res) => {
         });
         return;
     }
-    if (sessionID === null || exerciseID === null) {
+    if (!sessionID|| !exerciseID) {
         res.json({
             success: false,
             message: 'Invalid input(s) - (session/exercise)'
@@ -157,7 +157,7 @@ app.delete('/sessions/:id', (req, res) => {
     if (delInfo.changes > 0){
         res.json({
             logsExist: false,
-            message: `Session #${sessionID} deleted`
+            message: `Session deleted`
         });
     } else {
         res.json({
@@ -175,7 +175,7 @@ app.delete('/logs/:id', (req, res) => {
     const delInfo = deleteLog.run(logID);
 
     if (delInfo.changes > 0) {
-        res.json({ message: `Log #${logID} deleted` }); 
+        res.json({ message: `Log deleted` }); 
     }else {
         res.json({ message: 'No changes made' });
     }
@@ -206,7 +206,7 @@ app.patch('/logs/:id', (req, res) => {
 
     res.json({ 
         success: true,
-        message: `Log #${logID} updated` 
+        message: `Log updated` 
     });
 });
 

@@ -22,8 +22,8 @@ INSERT INTO "exercises" (exercise) VALUES
     ('Weighted/BW Dip 4x8'),
     ('Incline Dumbbell Bench Press 3x10'),
     ('Inverted Row 3x10'),
-    ('Broad Jump 3x4'),
-    ('Push-Ups 3x12'),
+    ('Broad Jump 3x5'),
+    ('Bosu Ball Push-Ups 3x20'),
     ('Pull-Ups 3x6'),
     ('Farmer Carry 3x40 (sec)')
 ON CONFLICT(exercise) DO NOTHING; 
@@ -60,9 +60,9 @@ INSERT INTO "junction" (day, exerciseRef) VALUES
     (5, (SELECT exercise_id FROM exercises WHERE exercise ='Inverted Row 3x10')),
     (5, (SELECT exercise_id FROM exercises WHERE exercise ='Dumbbell Lateral Raise 3x12')),
 
-    (6, (SELECT exercise_id FROM exercises WHERE exercise ='Broad Jump 3x4')),
+    (6, (SELECT exercise_id FROM exercises WHERE exercise ='Broad Jump 3x5')),
     (6, (SELECT exercise_id FROM exercises WHERE exercise ='Bulgarian Split Squat 3x8')),
-    (6, (SELECT exercise_id FROM exercises WHERE exercise ='Push-Ups 3x12')),
+    (6, (SELECT exercise_id FROM exercises WHERE exercise ='Bosu Ball Push-Ups 3x20')),
     (6, (SELECT exercise_id FROM exercises WHERE exercise = 'Pull-Ups 3x6')),
     (6, (SELECT exercise_id FROM exercises WHERE exercise = 'Farmer Carry 3x40 (sec)'))
 ON CONFLICT(day, exerciseRef) DO NOTHING;

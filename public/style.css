@@ -7,12 +7,6 @@
     --interactive-color: #FFDB58;
   }
 
-  .custom-input {
-    -webkit-appearance: none; /* Safari, Chrome, Older Edge */
-    -moz-appearance: none;    /* Firefox */
-    appearance: none;         /* Standard modern syntax */
-  }
-
   body {
     background-color: var(--primary-color);
     color: white;
@@ -21,9 +15,24 @@
   }
 
   #message-handler {
-    color: var(--description-color);
     background-color: var(--accent-color);
+    border: 2px solid; 
     border-color: var(--interactive-color);
+    position: fixed;
+    top: 70px;
+    left: 390px;
+    max-width: 15vw;
+    padding: 8px;
+    border-radius: 8px;
+
+  }
+
+  #message-handler.error {
+    border-color: red;
+  }
+
+  #message-handler:empty {
+    display: none;
   }
 
   .container {
@@ -35,12 +44,12 @@
   }
 
   .day-section, .session-section {
+    position: relative;
     background-color: var(--accent-color);
     border-radius: 12px;
     padding: 50px;
     min-height: 20vh;
-    max-width: 60vh;
-    min-width: 40vh;
+    min-width: 20vw;
     list-style: none;
   }
 
@@ -54,11 +63,19 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 30px;
   }
 
-  /* #clear-dayList-btn {
-  
-  } */
+  label {
+    display: block;
+  }
+
+  #clear-dayList-btn, #clear-logList-btn {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+  }
 
   .submit-day-btn, #day-select, #create-sess-btn, #sess-date, 
   .submit-date-btn, #clear-dayList-btn, #clear-logList-btn, #new-log-btn,
@@ -69,7 +86,8 @@
     padding: 5px 17px;
     border: 2px solid transparent; 
     transition: border-color 0.3s ease; 
-    gap: 2px;
+    margin-left: 10px;
+    margin-top: 10px;
   }
 
   #day-select, #sess-date {
@@ -90,7 +108,7 @@
   .new-weight-input:hover, .new-reps-input:hover, .updated-weight-input:hover, .updated-reps-input:hover,
   .submit-day-btn:hover, #day-select:hover, #create-sess-btn:hover, #sess-date:hover, 
   .submit-date-btn:hover, #clear-dayList-btn:hover, #clear-logList-btn:hover,#new-log-btn:hover,
-  #log-more-btn:hover, #edit-log-btn:hover, #add-logs-btn:hover {
+  #log-more-btn:hover, #edit-log-btn:hover, #add-logs-btn:hover, #cancel-edit-btn:hover, #delete-log-btn:hover, #delete-session-btn:hover {
     border-color: var(--interactive-color);
     background-color: white;
     cursor: pointer;
@@ -98,9 +116,12 @@
 
   #save-edit-btn:hover {
     border-color: green;
+    background-color: white;
+    cursor: pointer;
   }
   #cancel-edit-btn:hover, #delete-log-btn:hover, #delete-session-btn:hover {
     border-color: red;
+    
   }
 
   #edit-log-btn {
@@ -136,7 +157,7 @@
     cursor: pointer;
   }
 
-  #delete-log-btn, #delete-session-btn {
+  #delete-log-btn {
     background-image: url('/images/delete.png');
     background-repeat: no-repeat;
     background-position: center;

@@ -23,6 +23,7 @@ const msgDiv = document.getElementById('message-handler');
         function displayMsg(text, isError) {
             if (prevTimer > 0) {
                 clearTimeout(prevTimer);
+                msgDiv.classList.remove('error');
             }
             if (isError) {
                 msgDiv.classList.add('error');
@@ -31,8 +32,7 @@ const msgDiv = document.getElementById('message-handler');
 
             prevTimer = setTimeout(() => {
                 msgDiv.textContent = '';
-                msgDiv.classList.remove('error');
-            }, 4500);
+            }, 3000);
         }
 
         async function getDays(url, createInputFields) {
@@ -58,20 +58,21 @@ const msgDiv = document.getElementById('message-handler');
             li.className = 'list-elements';
             const span = document.createElement('span');
             if (!day.weight || !day.reps) { 
-                span.innerHTML = `${day.exercise} 
-                <input type = 'number' class = 'new-weight-input'> lbs x 
-                <input type = 'number' class = 'new-reps-input'> reps `;
+                span.innerHTML = `${day.exercise}`;
             } else {
-                span.innerHTML = `${day.exercise} ( Previous: ${day.weight} lbs x ${day.reps} reps ) <br>
-                <input type = 'number' class = 'new-weight-input'> lbs x 
-                <input type = 'number' class = 'new-reps-input'> reps `;
+                span.innerHTML = `${day.exercise} ( Previous: ${day.weight} lbs x ${day.reps} reps )`;
             }
             li.appendChild(span);
-            const newWeight = li.querySelector('.new-weight-input');
-            const newReps = li.querySelector('.new-reps-input');
+            const div = document.createElement('div');
+            div.className = 'list-divs';
+            div.innerHTML = `<input type = 'number' class = 'new-weight-input'> lbs x 
+                <input type = 'number' class = 'new-reps-input'> reps`;
+            const newWeight = div.querySelector('.new-weight-input');
+            const newReps = div.querySelector('.new-reps-input');
+            li.appendChild(div);
 
             const logExerciseBtn = createBtn('Log', 'new-log-btn');
-            span.appendChild(logExerciseBtn);
+            div.appendChild(logExerciseBtn);
 
             logExerciseBtn.addEventListener('click', () => {
                 async function newLog(url) {
@@ -85,6 +86,7 @@ const msgDiv = document.getElementById('message-handler');
                     const data = await response.json();
                     if (data.success) {
                         span.innerHTML = `${day.exercise} - ${newWeight.value} lbs x ${newReps.value} reps`
+                        div.remove();
                     }else {
                         displayMsg(data.message, true);
                     }
@@ -108,7 +110,7 @@ const msgDiv = document.getElementById('message-handler');
                 if (createSession = document.getElementById('create-sess-btn')) {
                     createSession.remove();
                 }
-               dayHead.innerText = 'View exercises - Begin logging' 
+               dayHead.innerText = 'View exercises - Begin logging';
             });
         }
 
@@ -118,11 +120,12 @@ const msgDiv = document.getElementById('message-handler');
 
             clearLoglist.addEventListener('click', () => {
                 logList.style.display = 'none';
-                sessHead.innerText = 'View/Edit/Delete Sessions'
+                sessHead.innerText = 'View/Edit/Delete Sessions';
             });
         }
 
         dayButton.addEventListener('click', () => {
+            dayList.style.display = 'inline-block';
             const value = inputDay.value;
             if(value == 1) {
                 dayHead.innerText = `Day ${value} Upper A`;
@@ -176,7 +179,7 @@ const msgDiv = document.getElementById('message-handler');
                 const response = await fetch(url);
                 const data = await response.json();
                 if (data.logsExist) {
-                    sessHead.innerText= `Day ${data.logs[0].dayLogged} - Logged on ${data.logs[0].date} `;
+                    sessHead.innerText = `Day ${data.logs[0].dayLogged} - Logged on ${data.logs[0].date} `;
 
                     const logMoreBtn = createBtn('Add more logs', 'log-more-btn');
                     logList.appendChild(logMoreBtn);
@@ -207,10 +210,13 @@ const msgDiv = document.getElementById('message-handler');
                         const span = document.createElement('span');
                         span.textContent = `${log.exercise}: ${log.weight} lbs x ${log.reps} reps`;
                         li.appendChild(span);
+                        const div = document.createElement('div');
+                        div.className = 'list-divs';
+                        li.appendChild(div);
 
                         let inputsCreated = false;
                         const editBtn = createBtn('Edit', 'edit-log-btn');
-                        li.appendChild(editBtn);
+                        div.appendChild(editBtn);
 
                         editBtn.addEventListener('click', () => {
                             editBtn.style.display = 'none';
@@ -269,7 +275,7 @@ const msgDiv = document.getElementById('message-handler');
                         });
 
                         const deleteLogBtn = createBtn('Delete', 'delete-log-btn');
-                        li.appendChild(deleteLogBtn);
+                        div.appendChild(deleteLogBtn);
 
                         deleteLogBtn.addEventListener('click', () => {
                             async function delLog(url) {
@@ -286,25 +292,18 @@ const msgDiv = document.getElementById('message-handler');
                     });
                 } else {
                     if (data.sessionExists) {
-                        logList.innerHTML = `No workouts logged on ${data.session.date}: `
-
-                        const deleteSessionBtn = createBtn('Delete session', 'delete-session-btn');
-                        logList.appendChild(deleteSessionBtn);
-
-                        deleteSessionBtn.addEventListener('click', () => {
-                            async function delSession(url) {
-                                const response = await fetch(url, {
-                                    method: 'DELETE'
-                                });
-                                const data = await response.json();
-                                logList.innerHTML = 'No session on this day';
-                                displayMsg(data.message, false);
-                            }
-                            delSession(`/sessions/${data.session.session_id}`);
-                        });
+                        sessHead.innerText = `Session created ${data.session.date}`;
+                        const li = document.createElement('li');
+                        li.className = 'list-elements';
+                        const span = document.createElement('span');
+                        span.textContent = `No logs found `;
+                        li.appendChild(span);
+                        const div = document.createElement('div');
+                        div.className = 'list-divs';
+                        li.appendChild(div);
 
                         const addLogsBtn = createBtn('Add logs', 'add-logs-btn');
-                        logList.appendChild(addLogsBtn);
+                        div.appendChild(addLogsBtn);
 
                         addLogsBtn.addEventListener('click', () => {
                             if (document.getElementById('delete-session-btn')) {
@@ -312,8 +311,43 @@ const msgDiv = document.getElementById('message-handler');
                             }
                             addLogsBtn.remove();
                             sessionID = data.session.session_id;
+                            if(data.session.dayLogged == 1) {
+                                dayHead.innerText = `Day ${data.session.dayLogged} Upper A`;
+                            } else if(data.session.dayLogged == 2) {
+                                dayHead.innerText = `Day ${data.session.dayLogged} Lower A`;
+                            } else if(data.session.dayLogged == 3) {
+                                dayHead.innerText = `Day ${data.session.dayLogged} Upper B`;
+                            } else if(data.session.dayLogged == 4) {
+                                dayHead.innerText = `Day ${data.session.dayLogged} Lower B`;
+                            } else if(data.session.dayLogged == 5) {
+                                dayHead.innerText = `Day ${data.session.dayLogged} Upper C`;
+                            } else {
+                                dayHead.innerText = `Day ${data.session.dayLogged} Plyometrics`;
+                            }
                             getDays(`/days/${data.session.dayLogged}`, true);
+                            logList.style.display = 'none';
+                            sessHead.innerText = 'View/Edit/Delete Sessions';
                         });
+
+                        const deleteSessionBtn = createBtn('Delete session', 'delete-session-btn');
+                        div.appendChild(deleteSessionBtn);
+
+                        deleteSessionBtn.addEventListener('click', () => {
+                            async function delSession(url) {
+                                const response = await fetch(url, {
+                                    method: 'DELETE'
+                                });
+                                const data = await response.json();
+                                logList.style.display = 'none';
+                                sessHead.innerText = 'View/Edit/Delete Sessions';
+                                dayList.style.display = 'none';
+                                dayHead.innerText = 'View exercises - Begin logging'; 
+                                displayMsg(data.message, false);
+                            }
+                            delSession(`/sessions/${data.session.session_id}`);
+                        });
+
+                        logList.appendChild(li);
                     } else {
                         displayMsg(data.message, true);
                     }
