@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const database = require('better-sqlite3');
-const db = new database('gym.db');
+const db = new database(process.env.DB_PATH || 'gym.db');
 
 try {
     const schema = fs.readFileSync('./schema.sql', 'utf8');

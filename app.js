@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const database = require('better-sqlite3');
 const db = require('./db.js');
+const port = process.env.PORT || 3000;
 
 const rows2 = db.prepare('SELECT * FROM sessions').all();
 console.log(rows2);
@@ -185,7 +186,6 @@ app.delete('/logs/:id', (req, res) => {
 app.patch('/logs/:id', (req, res) => {
     const logID = req.params.id;
     const { weight, reps } = req.body;
-    // let updInfo = undefined;
 
     if (!weight && !reps) {
         res.json({ 
@@ -210,11 +210,6 @@ app.patch('/logs/:id', (req, res) => {
     });
 });
 
-app.listen(3000, () => {
-    console.log('Server is running on http://localhost:3000');
-});
-
-// curl -X PATCH http://localhost:3000/logs/2 -H "Content-Type: application/json" -d '{"weight": "300", "reps": "15"}'
-// curl -X DELETE http://localhost:3000/logs/1
-// curl --json '{"sessionID": "1", "exerciseID": "1", "weight": "225", "reps": "20"}' http://localhost:3000/logs
-// curl --json '{"day": "4"}' http://localhost:3000/sessions
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
