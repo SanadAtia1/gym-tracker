@@ -48,9 +48,6 @@
     .container {
       flex-direction: column; 
     }
-    .day-section, .session-section {
-      max-height: 5vh;
-    }
     #message-handler {
       top: 10px;
       left: 210px;
