@@ -666,7 +666,7 @@ app.get('/days/:day', (req, res) => {
         // 5 can show a result most recently logged during Day 1.
         const dayQuery = db.prepare(`
             WITH ranked AS (
-            SELECT e.exercise, e.exercise_id, e.target_sets, e.target_reps,
+            SELECT e.exercise, e.exercise_id, j.target_sets, j.target_reps,
             l.weight, l.reps, j.junction_id, j.day,
             ROW_NUMBER() OVER (PARTITION BY e.exercise_id ORDER BY s.date DESC, l.log_id DESC) AS rn
             FROM exercises e
@@ -711,8 +711,9 @@ app.post('/exercises', (req, res) => {
     const createExercise = db.transaction(() => {
         // Reuse an existing exercise for this user so multiple workout days
         // point to the same exercise_id and therefore share log history.
+        // Targets live on junction so each day can keep its own prescription.
         const existing = db.prepare(`
-            SELECT exercise_id, target_sets, target_reps
+            SELECT exercise_id
             FROM exercises
             WHERE exercise = ? AND userRef = ?
         `).get(exercise, req.user.user_id);
@@ -720,35 +721,20 @@ app.post('/exercises', (req, res) => {
         let exerciseID;
         if (existing) {
             exerciseID = existing.exercise_id;
-
-            if (existing.target_sets === null && existing.target_reps === null) {
-                db.prepare(`
-                    UPDATE exercises
-                    SET target_sets = ?, target_reps = ?
-                    WHERE exercise_id = ?
-                `).run(targetSets, targetReps, exerciseID);
-            } else if (
-                existing.target_sets !== targetSets ||
-                existing.target_reps !== targetReps
-            ) {
-                const error = new Error('Exercise targets do not match');
-                error.code = 'EXERCISE_TARGET_MISMATCH';
-                throw error;
-            }
         } else {
             const result = db.prepare(`
-                INSERT INTO exercises (exercise, target_sets, target_reps, userRef)
-                VALUES (?, ?, ?, ?)
-            `).run(exercise, targetSets, targetReps, req.user.user_id);
+                INSERT INTO exercises (exercise, userRef)
+                VALUES (?, ?)
+            `).run(exercise, req.user.user_id);
             exerciseID = result.lastInsertRowid;
         }
 
         // The junction table represents the many-to-many relationship between
         // workout days and exercises. INSERT OR IGNORE prevents duplicate pairs.
         const assignment = db.prepare(`
-            INSERT OR IGNORE INTO junction (day, exerciseRef)
-            VALUES (?, ?)
-        `).run(day, exerciseID);
+            INSERT OR IGNORE INTO junction (day, exerciseRef, target_sets, target_reps)
+            VALUES (?, ?, ?, ?)
+        `).run(day, exerciseID, targetSets, targetReps);
 
         if (assignment.changes === 0) {
             const error = new Error('Exercise already assigned');
@@ -773,12 +759,6 @@ app.post('/exercises', (req, res) => {
                 message: 'That exercise is already assigned to this day.'
             });
         }
-        if (error.code === 'EXERCISE_TARGET_MISMATCH') {
-            return res.status(409).json({
-                success: false,
-                message: 'That exercise already exists with different targets. Edit it first.'
-            });
-        }
 
         console.error('Error creating exercise:', error);
         return res.status(500).json({
@@ -788,7 +768,7 @@ app.post('/exercises', (req, res) => {
     }
 });
 
-// Update the name or target prescription of an exercise owned by this user.
+// Update the name of an exercise and/or the day-specific target prescription.
 app.patch('/exercises/:id', (req, res) => {
     const exerciseID = Number(req.params.id);
     // Including userRef prevents one user from reading or editing another
@@ -804,33 +784,67 @@ app.patch('/exercises/:id', (req, res) => {
         });
     }
 
+    const day = req.body.day === undefined ? null : Number(req.body.day);
     const exercise = req.body.exercise === undefined
         ? current.exercise
         : String(req.body.exercise).trim();
-    const targetSets = req.body.sets === undefined
-        ? current.target_sets
-        : Number(req.body.sets);
-    const targetReps = req.body.reps === undefined
-        ? current.target_reps
-        : Number(req.body.reps);
+    const targetSets = req.body.sets === undefined ? null : Number(req.body.sets);
+    const targetReps = req.body.reps === undefined ? null : Number(req.body.reps);
+    const updatingTargets = targetSets !== null || targetReps !== null;
 
-    if (
-        !exercise ||
-        !Number.isInteger(targetSets) || targetSets < 1 ||
-        !Number.isInteger(targetReps) || targetReps < 1
-    ) {
+    if (!exercise) {
         return res.status(400).json({
             success: false,
             message: 'Enter a name and positive whole numbers for sets and reps.'
         });
     }
 
+    if (updatingTargets) {
+        if (
+            !Number.isInteger(day) || day < 1 || day > maxSplitDays ||
+            !Number.isInteger(targetSets) || targetSets < 1 ||
+            !Number.isInteger(targetReps) || targetReps < 1
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: 'Enter a name and positive whole numbers for day, sets, and reps.'
+            });
+        }
+    }
+
     try {
-        db.prepare(`
-            UPDATE exercises
-            SET exercise = ?, target_sets = ?, target_reps = ?
-            WHERE exercise_id = ? AND userRef = ?
-        `).run(exercise, targetSets, targetReps, exerciseID, req.user.user_id);
+        const updateExercise = db.transaction(() => {
+            db.prepare(`
+                UPDATE exercises
+                SET exercise = ?
+                WHERE exercise_id = ? AND userRef = ?
+            `).run(exercise, exerciseID, req.user.user_id);
+
+            let dayTargets = null;
+            if (updatingTargets) {
+                const assignment = db.prepare(`
+                    UPDATE junction
+                    SET target_sets = ?, target_reps = ?
+                    WHERE day = ? AND exerciseRef = ?
+                `).run(targetSets, targetReps, day, exerciseID);
+
+                if (assignment.changes === 0) {
+                    const error = new Error('Exercise not assigned to day');
+                    error.code = 'EXERCISE_NOT_ON_DAY';
+                    throw error;
+                }
+
+                dayTargets = {
+                    day,
+                    target_sets: targetSets,
+                    target_reps: targetReps
+                };
+            }
+
+            return dayTargets;
+        });
+
+        const dayTargets = updateExercise();
 
         return res.json({
             success: true,
@@ -838,8 +852,7 @@ app.patch('/exercises/:id', (req, res) => {
             exercise: {
                 exercise_id: exerciseID,
                 exercise,
-                target_sets: targetSets,
-                target_reps: targetReps
+                ...(dayTargets || {})
             }
         });
     } catch (error) {
@@ -847,6 +860,12 @@ app.patch('/exercises/:id', (req, res) => {
             return res.status(409).json({
                 success: false,
                 message: 'Another exercise already uses that name.'
+            });
+        }
+        if (error.code === 'EXERCISE_NOT_ON_DAY') {
+            return res.status(404).json({
+                success: false,
+                message: 'Exercise was not assigned to that day.'
             });
         }
 
@@ -1028,7 +1047,7 @@ app.get('/sessions/:id/day/:day', (req, res) => {
     // narrows that list to exercises not yet logged in this specific session.
     // EXISTS also proves that the requested session belongs to this user.
     const printEmptyLogs = db.prepare(`
-        SELECT e.exercise, e.exercise_id, e.target_sets, e.target_reps, l.weight, l.reps
+        SELECT e.exercise, e.exercise_id, j.target_sets, j.target_reps, l.weight, l.reps
         FROM exercises e
         JOIN junction j ON j.exerciseRef = e.exercise_id 
         LEFT JOIN logs l ON l.exerciseRef = e.exercise_id AND l.sessionRef = ?

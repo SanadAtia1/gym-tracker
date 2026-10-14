@@ -458,6 +458,7 @@ const msgDiv = document.getElementById('message-handler');
                     },
                     body: JSON.stringify({
                         exercise: nameInput.value,
+                        day: exercise.day,
                         sets: setsInput.value,
                         reps: repsInput.value
                     })
