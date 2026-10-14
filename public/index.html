@@ -7,32 +7,141 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
+    <main id="auth-view" class="auth-view hidden">
+      <section id="auth-card" class="auth-card">
+        <div class="auth-forms">
+          <form id="login-form" class="auth-form login-form">
+            <h1>Sign in</h1>
+            <p>Welcome back to your workout log.</p>
+            <label for="login-email">Email</label>
+            <input type="email" id="login-email" autocomplete="email" required>
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" autocomplete="current-password" required>
+            <button type="button" id="show-forgot-password-btn" class="auth-text-button">Forgot password?</button>
+            <button type="submit">Sign in</button>
+            <div id="verification-help" class="verification-help hidden">
+              <p id="verification-help-text">Check your email for a verification link.</p>
+              <a id="dev-verification-link" class="hidden">Verify this local account</a>
+              <button type="button" id="resend-verification-btn">Resend verification email</button>
+            </div>
+          </form>
 
-    <div class="container">
-      <div class="day-section">
-        <p id="day-header">View exercises - Begin logging</p>
-        <ul class="exercise-list"></ul> <br>
-        <label for="day"></label>
-        <select id="day-select" name="day">
-            <option value="1">Day 1</option>
-            <option value="2">Day 2</option>
-            <option value="3">Day 3</option>
-            <option value="4">Day 4</option>
-            <option value="5">Day 5</option>
-            <option value="6">Day 6</option>
-        </select>
-        <button type="button" class="submit-day-btn">Go</button>
-      </div>
-      <div class="session-section">
-        <p id="session-header">View/Edit/Delete Sessions</p>
-        <ul class="sess-log-list"></ul>
-        <label for="sess-date">View session on:</label>
-        <input type="date" id="sess-date" name="sess-date">
-        <button type="button" class="submit-date-btn">Go</button> <br>
+          <form id="signup-form" class="auth-form signup-form">
+            <h1>Create account</h1>
+            <p>Start building a workout plan that fits you.</p>
+            <label for="signup-name">Name</label>
+            <input type="text" id="signup-name" autocomplete="name" maxlength="80" required>
+            <label for="signup-email">Email</label>
+            <input type="email" id="signup-email" autocomplete="email" required>
+            <label for="signup-password">Password</label>
+            <input type="password" id="signup-password" autocomplete="new-password" minlength="8" maxlength="128" required>
+            <button type="submit">Sign up</button>
+          </form>
+
+          <form id="forgot-password-form" class="auth-form recovery-form">
+            <h1>Reset password</h1>
+            <p>Enter your email and we’ll send you a one-hour reset link.</p>
+            <label for="recovery-email">Email</label>
+            <input type="email" id="recovery-email" autocomplete="email" required>
+            <button type="submit">Send reset link</button>
+            <button type="button" class="auth-text-button back-to-login-btn">Back to sign in</button>
+            <a id="dev-reset-link" class="hidden">Open local reset link</a>
+          </form>
+
+          <form id="reset-password-form" class="auth-form reset-form">
+            <h1>Choose a new password</h1>
+            <p>Your new password must contain at least eight characters.</p>
+            <label for="reset-password">New password</label>
+            <input type="password" id="reset-password" autocomplete="new-password" minlength="8" maxlength="128" required>
+            <label for="reset-password-confirm">Confirm password</label>
+            <input type="password" id="reset-password-confirm" autocomplete="new-password" minlength="8" maxlength="128" required>
+            <button type="submit">Update password</button>
+            <button type="button" class="auth-text-button back-to-login-btn">Cancel</button>
+          </form>
+        </div>
+
+        <div class="auth-switch-panel">
+          <div class="auth-switch-copy login-prompt">
+            <h2>New here?</h2>
+            <p>Create an account to keep your workouts personal.</p>
+            <button type="button" id="show-signup-btn">Sign up</button>
+          </div>
+          <div class="auth-switch-copy signup-prompt">
+            <h2>Welcome back!</h2>
+            <p>Sign in to continue tracking your progress.</p>
+            <button type="button" id="show-login-btn">Sign in</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="app-view" class="hidden">
+      <header class="site-header">
+        <div>
+          <h1>Personal Exercise Log</h1>
+          <span id="user-greeting"></span>
+        </div>
+        <div class="header-actions">
+          <button type="button" id="home-btn">Home</button>
+          <button type="button" id="logout-btn">Sign out</button>
+        </div>
+      </header>
+
+      <div class="container">
+        <div class="day-section">
+          <p id="day-header">Begin logging</p>
+          <ul class="exercise-list"></ul> <br>
+          <form id="day-form">
+              <label for="day-select">Workout day</label>
+              <select id="day-select" name="day" required></select>
+              <button type="submit" class="submit-day-btn">Go</button>
+          </form>
+        </div>
+        <details class="exercise-section">
+          <summary id="exercise-header">Manage split</summary>
+          <div class="exercise-panel-content">
+            <p class="exercise-subheader">Set up your workout split</p>
+            <form id="split-form">
+                <label for="split-days">Number of workout days</label>
+                <input type="number" id="split-days" name="split-days" min="1" max="14" required>
+                <button type="submit" id="save-split-btn">Save split</button>
+            </form>
+
+            <p class="exercise-subheader">Add an exercise</p>
+            <form id="exercise-form">
+                <label for="exercise-name">Exercise name</label>
+                <input type="text" id="exercise-name" name="exercise-name" required>
+
+                <div class="exercise-targets">
+                    <div>
+                        <label for="exercise-sets">Sets</label>
+                        <input type="number" id="exercise-sets" name="exercise-sets" min="1" required>
+                    </div>
+                    <div>
+                        <label for="exercise-reps">Reps</label>
+                        <input type="number" id="exercise-reps" name="exercise-reps" min="1" required>
+                    </div>
+                </div>
+
+                <label for="exercise-day">Workout day</label>
+                <select id="exercise-day" name="exercise-day" required></select>
+                <button type="submit" id="add-exercise-btn">Add exercise</button>
+            </form>
+          </div>
+        </details>
+        <div class="session-section">
+          <p id="session-header">View Sessions</p>
+          <ul class="sess-log-list"></ul>
+          <form id="session-form">
+              <label for="sess-date">View session on:</label>
+              <input type="date" id="sess-date" name="sess-date" required>
+              <button type="submit" class="submit-date-btn">Go</button>
+          </form>
+        </div>
       </div>
     </div>
 
-    <div id="message-handler"></div>
+    <div id="message-handler" role="status" aria-live="polite"></div>
 
     <script src="script.js"></script>
 </body>

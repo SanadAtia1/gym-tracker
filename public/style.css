@@ -9,185 +9,655 @@
 
   body {
     background-color: var(--primary-color);
-    color: white;
+    color: var(--text-color);
+    color-scheme: dark;
     font-family: 'Roboto', sans-serif;
     font-weight: 500;
   }
 
-  #message-handler {
-    background-color: var(--accent-color);
-    border: 2px solid; 
-    border-color: var(--interactive-color);
-    position: fixed;
-    top: 70px;
-    left: 70px;
-    max-width: 15vw;
-    padding: 8px;
-    border-radius: 8px;
+  .hidden {
+    display: none !important;
+  }
 
+  .auth-view {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 24px;
+    box-sizing: border-box;
+  }
+
+  .auth-card {
+    position: relative;
+    width: min(900px, 100%);
+    min-height: 520px;
+    overflow: hidden;
+    background: var(--accent-color);
+    border: 1px solid #343434;
+    border-radius: 18px;
+    box-shadow: 0 24px 70px rgb(0 0 0 / 40%);
+  }
+
+  .auth-forms {
+    position: absolute;
+    inset: 0;
+  }
+
+  .auth-form {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    padding: 56px;
+    box-sizing: border-box;
+    transition: transform 450ms ease, opacity 300ms ease;
+  }
+
+  .auth-form h1 {
+    color: var(--interactive-color);
+    margin: 0;
+  }
+
+  .auth-form p {
+    color: var(--description-color);
+    margin: 0 0 14px;
+  }
+
+  .auth-form input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px 14px;
+    color: var(--text-color);
+    background: #191919;
+    border: 1px solid #3b3b3b;
+    border-radius: 7px;
+  }
+
+  .auth-form input:focus {
+    outline: 2px solid var(--interactive-color);
+    outline-offset: 1px;
+  }
+
+  .auth-form button, .auth-switch-panel button {
+    padding: 11px 24px;
+    border: 2px solid var(--interactive-color);
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+
+  .auth-form button {
+    margin-top: 14px;
+    color: var(--primary-color);
+    background: var(--interactive-color);
+  }
+
+  .auth-form .auth-text-button {
+    width: fit-content;
+    margin: 2px 0 0 auto;
+    padding: 2px;
+    color: var(--description-color);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    font-weight: 500;
+  }
+
+  .auth-form .auth-text-button:hover {
+    color: var(--interactive-color);
+  }
+
+  #dev-reset-link {
+    color: var(--interactive-color);
+    text-align: center;
+  }
+
+  .verification-help {
+    margin-top: 12px;
+    padding: 12px;
+    background: #191919;
+    border: 1px solid #3b3b3b;
+    border-radius: 8px;
+  }
+
+  .verification-help p {
+    margin: 0 0 8px;
+  }
+
+  .verification-help a {
+    display: inline-block;
+    color: var(--interactive-color);
+    margin-bottom: 8px;
+  }
+
+  .verification-help button {
+    width: 100%;
+    margin-top: 4px;
+    padding: 8px 12px;
+  }
+
+  .login-form {
+    left: 0;
+  }
+
+  .signup-form {
+    left: 50%;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .recovery-form, .reset-form {
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .auth-card.signup-mode .login-form {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(100%);
+  }
+
+  .auth-card.signup-mode .signup-form {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+  }
+
+  .auth-card.recovery-mode .login-form,
+  .auth-card.reset-mode .login-form {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-20px);
+  }
+
+  .auth-card.recovery-mode .recovery-form,
+  .auth-card.reset-mode .reset-form {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+  }
+
+  .auth-switch-panel {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    z-index: 2;
+    width: 50%;
+    height: 100%;
+    color: var(--primary-color);
+    background: var(--interactive-color);
+    transition: transform 450ms ease;
+  }
+
+  .auth-card.signup-mode .auth-switch-panel {
+    transform: translateX(-100%);
+  }
+
+  .auth-switch-copy {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    text-align: center;
+    box-sizing: border-box;
+    transition: opacity 220ms ease;
+  }
+
+  .auth-switch-copy h2 {
+    margin-bottom: 8px;
+    font-size: 2rem;
+  }
+
+  .auth-switch-copy p {
+    max-width: 280px;
+    line-height: 1.5;
+  }
+
+  .auth-switch-panel button {
+    color: var(--primary-color);
+    background: transparent;
+    border-color: var(--primary-color);
+  }
+
+  .signup-prompt {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .auth-card.signup-mode .login-prompt {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .auth-card.signup-mode .signup-prompt {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: calc(100% - 40px);
+    max-width: 1100px;
+    margin: 20px auto 0;
+  }
+
+  .site-header h1 {
+    color: var(--interactive-color);
+    font-size: 1.4rem;
+    margin: 0;
+  }
+
+  #user-greeting {
+    display: block;
+    margin-top: 4px;
+    color: var(--description-color);
+    font-size: 0.9rem;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  #message-handler {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+    box-sizing: border-box;
+    width: min(360px, calc(100vw - 48px));
+    padding: 14px 16px;
+    color: var(--text-color);
+    background-color: #242424;
+    border: 1px solid #3a3a3a;
+    border-left: 4px solid var(--interactive-color);
+    border-radius: 10px;
+    box-shadow: 0 12px 30px rgb(0 0 0 / 35%);
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    animation: notification-in 180ms ease-out;
   }
 
   #message-handler.error {
-    border-color: red;
+    border-left-color: #ff5a5f;
   }
 
   #message-handler:empty {
     display: none;
   }
 
+  @keyframes notification-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "day session"
+      "exercise exercise";
+    align-content: center;
     align-items: center;
+    width: calc(100% - 40px);
+    max-width: 1100px;
+    margin: 0 auto;
     min-height: 85vh;
     gap: 25px;
   }
 
-  @media screen and (max-width: 600px) {
+  .day-section {
+    grid-area: day;
+  }
+
+  .session-section {
+    grid-area: session;
+  }
+
+  .container > .exercise-section {
+    grid-area: exercise;
+    justify-self: center;
+    width: calc(50% - 12.5px);
+  }
+
+  @media screen and (max-width: 700px) {
     .container {
-      flex-direction: column; 
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "day"
+        "session"
+        "exercise";
+    }
+    .container > .exercise-section {
+      width: 100%;
     }
     #message-handler {
-      top: 10px;
-      left: 210px;
-      text-align: center;
-      max-width: 610px;
+      top: 12px;
+      bottom: auto;
+      right: 12px;
+      left: 12px;
+      width: auto;
+      text-align: left;
     }
   }
 
-  .day-section, .session-section {
+  .day-section, .exercise-section, .session-section {
     position: relative;
     background-color: var(--accent-color);
+    border: 1px solid #303030;
     border-radius: 12px;
+    box-shadow: 0 12px 28px rgb(0 0 0 / 18%);
     padding: 50px;
     min-height: 20vh;
     min-width: 20vw;
+    width: 100%;
+    box-sizing: border-box;
     list-style: none;
   }
 
-  #day-header, #session-header  {
+  .exercise-section:not([open]) {
+    min-height: 0;
+    padding: 20px 30px;
+  }
+
+  #exercise-header {
+    cursor: pointer;
+  }
+
+  .exercise-section[open] #exercise-header {
+    margin-bottom: 24px;
+  }
+
+  .exercise-list:empty, .sess-log-list:empty {
+    display: none;
+  }
+
+  #day-header, #exercise-header, #session-header  {
     color: var(--interactive-color);
     font-weight: 600;
     font-size: large;
   }
 
   .list-elements {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px 20px;
+    padding: 10px 0;
+  }
+
+  .exercise-list, .sess-log-list {
+    padding-left: 0;
+  }
+
+  .list-elements > span:first-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .exercise-actions, .list-divs {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     flex-wrap: wrap;
-    gap: 30px;
+    gap: 8px;
+  }
+
+  .exercise-actions button, .list-divs button,
+  .remove-confirmation button {
+    margin: 0;
   }
 
   label {
     display: block;
   }
 
-  #clear-dayList-btn, #clear-logList-btn {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-  }
-
-  .submit-day-btn, #day-select, #create-sess-btn, #sess-date, 
-  .submit-date-btn, #clear-dayList-btn, #clear-logList-btn, #new-log-btn,
+  .submit-day-btn, #day-select, #create-sess-btn, #sess-date,
+  .submit-date-btn, #home-btn, #logout-btn, #new-log-btn,
   #log-more-btn, #edit-log-btn, #save-edit-btn, #cancel-edit-btn, #delete-log-btn,
-  #delete-session-btn, #add-logs-btn {
-    background-color: var(--description-color);
+  #delete-session-btn, #add-logs-btn, #exercise-day, #add-exercise-btn,
+  #edit-exercise-btn, #save-exercise-btn, #cancel-exercise-btn,
+  #remove-exercise-btn, #save-split-btn, #split-days,
+  #confirm-remove-exercise-btn, #keep-exercise-btn {
+    color: var(--text-color);
+    background-color: #191919;
     border-radius: 5px;
     padding: 5px 17px;
-    border: 2px solid transparent; 
-    transition: border-color 0.3s ease; 
+    border: 1px solid #3b3b3b;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
     margin-left: 10px;
     margin-top: 10px;
   }
 
-  #day-select, #sess-date {
-    background-color: var(--description-color);
+  #day-select, #sess-date, #exercise-day, #split-days {
+    color: var(--text-color);
+    background-color: #191919;
   }
 
   .new-weight-input, .new-reps-input,
-  .updated-weight-input, .updated-reps-input {
+  .updated-weight-input, .updated-reps-input,
+  #exercise-name, #exercise-sets, #exercise-reps,
+  .edit-exercise-name, .edit-exercise-sets, .edit-exercise-reps {
     width: 70px;
     height: 30px;
     border-radius: 5px;
     border: 2px solid; 
-    border-color: var(--description-color);
+    border-color: #3b3b3b;
+    color: var(--text-color);
+    background-color: #191919;
     transition: border-color 0.3s ease; 
    
   }
 
   .new-weight-input:hover, .new-reps-input:hover, .updated-weight-input:hover, .updated-reps-input:hover,
   .submit-day-btn:hover, #day-select:hover, #create-sess-btn:hover, #sess-date:hover, 
-  .submit-date-btn:hover, #clear-dayList-btn:hover, #clear-logList-btn:hover,#new-log-btn:hover,
-  #log-more-btn:hover, #edit-log-btn:hover, #add-logs-btn:hover, #cancel-edit-btn:hover, #delete-log-btn:hover, #delete-session-btn:hover {
+  .submit-date-btn:hover, #home-btn:hover, #logout-btn:hover, #new-log-btn:hover,
+  #log-more-btn:hover, #edit-log-btn:hover, #add-logs-btn:hover, #cancel-edit-btn:hover,
+  #delete-log-btn:hover, #delete-session-btn:hover, #exercise-day:hover, #add-exercise-btn:hover,
+  #edit-exercise-btn:hover, #save-exercise-btn:hover, #cancel-exercise-btn:hover,
+  #remove-exercise-btn:hover, #save-split-btn:hover, #split-days:hover,
+  #confirm-remove-exercise-btn:hover, #keep-exercise-btn:hover {
     border-color: var(--interactive-color);
-    background-color: white;
+    background-color: #191919;
     cursor: pointer;
+  }
+
+  .submit-day-btn:hover, #create-sess-btn:hover, .submit-date-btn:hover,
+  #home-btn:hover, #logout-btn:hover, #new-log-btn:hover, #log-more-btn:hover,
+  #edit-log-btn:hover, #add-logs-btn:hover, #save-edit-btn:hover,
+  #cancel-edit-btn:hover, #delete-log-btn:hover, #delete-session-btn:hover,
+  #add-exercise-btn:hover, #edit-exercise-btn:hover, #save-exercise-btn:hover,
+  #cancel-exercise-btn:hover, #remove-exercise-btn:hover, #save-split-btn:hover,
+  #confirm-remove-exercise-btn:hover, #keep-exercise-btn:hover {
+    color: var(--primary-color);
+    background-color: var(--interactive-color);
   }
 
   #save-edit-btn:hover {
     border-color: green;
-    background-color: white;
+    background-color: var(--interactive-color);
     cursor: pointer;
   }
-  #cancel-edit-btn:hover, #delete-log-btn:hover, #delete-session-btn:hover {
+  #cancel-edit-btn:hover, #delete-log-btn:hover, #delete-session-btn:hover,
+  #cancel-exercise-btn:hover, #remove-exercise-btn:hover,
+  #confirm-remove-exercise-btn:hover {
     border-color: red;
-    
+    color: white;
+    background-color: #c83f44;
   }
 
-  #edit-log-btn {
-    background-image: url('/images/edit.png');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    color: transparent; 
-    width: 40px;  
-    height: 30px;  
-    cursor: pointer;
+  #day-select:focus, #sess-date:focus, #exercise-day:focus, #split-days:focus,
+  .new-weight-input:focus, .new-reps-input:focus,
+  .updated-weight-input:focus, .updated-reps-input:focus,
+  #exercise-name:focus, #exercise-sets:focus, #exercise-reps:focus,
+  .edit-exercise-name:focus, .edit-exercise-sets:focus,
+  .edit-exercise-reps:focus {
+    outline: 2px solid var(--interactive-color);
+    outline-offset: 1px;
   }
 
-  #save-edit-btn {
-    background-image: url('/images/save.png');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    color: transparent; 
-    width: 15px;  
-    height: 30px;  
-    cursor: pointer;
+  #split-form, #exercise-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
 
-  #cancel-edit-btn {
-    background-image: url('/images/cancel.png');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    color: transparent; 
-    width: 40px;  
-    height: 30px;  
-    cursor: pointer;
+  #split-days {
+    box-sizing: border-box;
+    width: 100%;
+    margin-left: 0;
   }
 
-  #delete-log-btn {
-    background-image: url('/images/delete.png');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    color: transparent; 
-    width: 15px;  
-    height: 30px;  
-    cursor: pointer;
+  #save-split-btn {
+    margin-left: 0;
   }
 
-  .submit-date-btn, .submit-day-btn {
-    background-image: url('/images/arrow.png');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    color: transparent; 
-    width: 40px;  
-    height: 30px;  
-    cursor: pointer;
+  .exercise-subheader {
+    color: var(--interactive-color);
+    margin-top: 28px;
   }
+
+  #exercise-name {
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .exercise-targets {
+    display: flex;
+    gap: 12px;
+  }
+
+  .exercise-targets > div {
+    flex: 1;
+  }
+
+  #exercise-sets, #exercise-reps {
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  #add-exercise-btn {
+    margin-left: 0;
+  }
+
+  .edit-exercise-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    grid-column: 1 / -1;
+    margin-left: 0;
+  }
+
+  .edit-exercise-controls button {
+    margin: 0;
+  }
+
+  .edit-exercise-name {
+    width: 150px;
+  }
+
+  .remove-confirmation {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .edit-log-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    grid-column: 1 / -1;
+  }
+
+  .edit-log-controls button {
+    margin: 0;
+  }
+
+  @media screen and (max-width: 700px) {
+    .list-elements {
+      grid-template-columns: 1fr;
+    }
+
+    .exercise-actions, .list-divs {
+      justify-content: flex-start;
+    }
+
+    .auth-view {
+      padding: 12px;
+    }
+
+    .auth-card {
+      min-height: 680px;
+    }
+
+    .auth-forms {
+      height: 74%;
+    }
+
+    .auth-form {
+      left: 0;
+      width: 100%;
+      padding: 34px 28px;
+    }
+
+    .signup-form {
+      opacity: 1;
+      transform: translateX(100%);
+    }
+
+    .auth-card.signup-mode .login-form {
+      transform: translateX(-100%);
+    }
+
+    .auth-card.signup-mode .signup-form {
+      transform: translateX(0);
+    }
+
+    .auth-switch-panel {
+      top: 74%;
+      left: 0;
+      width: 100%;
+      height: 26%;
+    }
+
+    .auth-card.signup-mode .auth-switch-panel {
+      transform: none;
+    }
+
+    .auth-switch-copy {
+      padding: 18px 28px;
+    }
+
+    .auth-switch-copy h2 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    .auth-switch-copy p {
+      margin: 8px 0;
+    }
+
+    .site-header {
+      align-items: flex-start;
+    }
+  }
+

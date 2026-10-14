@@ -1,3 +1,5 @@
-node_modules
-*.db
+node_modules/
 .env
+*.db
+*.db-*
+.*-test.db*

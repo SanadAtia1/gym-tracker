@@ -1,21 +1,19 @@
 const fs = require('node:fs');
+const path = require('node:path');
 const database = require('better-sqlite3');
-const db = new database(process.env.DB_PATH || 'gym.db');
+const dbPath = process.env.DB_PATH || path.join(__dirname, 'gym.db');
+const db = new database(dbPath);
 
 try {
-    const schema = fs.readFileSync('./schema.sql', 'utf8');
+    db.pragma('foreign_keys = ON');
+    db.pragma('journal_mode = WAL');
+
+    const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
     db.exec(schema);
     console.log('Schema executed successfully.');
 } catch (error) {
     console.error('Error executing schema:', error);
-}
-
-try {
-    const seed = fs.readFileSync('./seed.sql', 'utf8');
-    db.exec(seed);
-    console.log('Seed executed successfully.');
-} catch (error) {
-    console.error('Error executing seed:', error);
+    throw error;
 }
 
 
